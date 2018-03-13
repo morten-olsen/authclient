@@ -1,5 +1,6 @@
 # AuthClient
 
+[Documentation](https://morten-olsen.github.io/authclient/)
 
 ## Usage
 
