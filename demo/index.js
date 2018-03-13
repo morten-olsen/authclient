@@ -5,8 +5,6 @@ const implicitBtn = global.document.querySelector('#implicit');
 const authCode = global.document.querySelector('#authcode');
 const main = global.document.querySelector('#main');
 
-
-
 const boot = async (configuration, run) => {
   const authClient = new AuthClient(configuration);
   const isValidUrl = await authClient.isValidUrl(global.location.href);
