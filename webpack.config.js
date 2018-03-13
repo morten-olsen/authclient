@@ -5,6 +5,7 @@ const packageInfo = require('./package.json');
 
 module.exports = {
   entry: path.join(__dirname, packageInfo.src),
+  mode: 'production',
   output: {
     path: path.join(__dirname, 'dist'),
     filename: `${packageInfo.name}.min.js`,
