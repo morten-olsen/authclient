@@ -6,27 +6,129 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
-    "authenticatornator/lib/crypto.js~crypto",
-    "class/src/Crypto.js~Crypto.html",
-    "<span>Crypto</span> <span class=\"search-result-import-path\">authenticatornator/lib/Crypto.js</span>",
+    "authenticatornator/lib/__mocks__/axios.js~axios",
+    "class/src/__mocks__/axios.js~Axios.html",
+    "<span>Axios</span> <span class=\"search-result-import-path\">authenticatornator/lib/__mocks__/axios.js</span>",
     "class"
   ],
   [
-    "authenticatornator/lib/store.js~store",
-    "class/src/Store.js~Store.html",
-    "<span>Store</span> <span class=\"search-result-import-path\">authenticatornator/lib/Store.js</span>",
+    "authenticatornator/lib/crypto.web.js~crypto",
+    "class/src/Crypto.web.js~Crypto.html",
+    "<span>Crypto</span> <span class=\"search-result-import-path\">authenticatornator/lib/Crypto.web.js</span>",
     "class"
+  ],
+  [
+    "authenticatornator/lib/crypto.node.js~nodecrypto",
+    "class/src/Crypto.node.js~NodeCrypto.html",
+    "<span>NodeCrypto</span> <span class=\"search-result-import-path\">authenticatornator/lib/Crypto.node.js</span>",
+    "class"
+  ],
+  [
+    "authenticatornator/lib/store.node.js~nodestore",
+    "class/src/Store.node.js~NodeStore.html",
+    "<span>NodeStore</span> <span class=\"search-result-import-path\">authenticatornator/lib/Store.node.js</span>",
+    "class"
+  ],
+  [
+    "authenticatornator/lib/store.web.js~store",
+    "class/src/Store.web.js~Store.html",
+    "<span>Store</span> <span class=\"search-result-import-path\">authenticatornator/lib/Store.web.js</span>",
+    "class"
+  ],
+  [
+    "authenticatornator/lib/__mocks__/axios.js~axios",
+    "variable/index.html#static-variable-axios",
+    "<span>axios</span> <span class=\"search-result-import-path\">authenticatornator/lib/__mocks__/axios.js</span>",
+    "variable"
   ],
   [
     "",
-    "test-file/src/filler.spec.js.html#lineNumber3",
-    "fill",
+    "test-file/src/AuthClient.spec.js.html#lineNumber15",
+    "AuthClient",
     "test"
   ],
   [
     "",
-    "test-file/src/filler.spec.js.html#lineNumber4",
-    "fill test",
+    "test-file/src/AuthClient.spec.js.html#lineNumber75",
+    "AuthClient authentication code grant",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/AuthClient.spec.js.html#lineNumber110",
+    "AuthClient authentication code grant token exchange",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/AuthClient.spec.js.html#lineNumber134",
+    "AuthClient authentication code grant token exchange with crypto",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/AuthClient.spec.js.html#lineNumber111",
+    "AuthClient authentication code grant token exchange without crypto",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/AuthClient.spec.js.html#lineNumber76",
+    "AuthClient authentication code grant url generator",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/AuthClient.spec.js.html#lineNumber92",
+    "AuthClient authentication code grant url generator with crypto",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/AuthClient.spec.js.html#lineNumber77",
+    "AuthClient authentication code grant url generator without crypto",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/AuthClient.spec.js.html#lineNumber25",
+    "AuthClient implicit grant",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/AuthClient.spec.js.html#lineNumber60",
+    "AuthClient implicit grant token exchange",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/AuthClient.spec.js.html#lineNumber67",
+    "AuthClient implicit grant token exchange with hash",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/AuthClient.spec.js.html#lineNumber61",
+    "AuthClient implicit grant token exchange with query parameter",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/AuthClient.spec.js.html#lineNumber26",
+    "AuthClient implicit grant url generator",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/AuthClient.spec.js.html#lineNumber42",
+    "AuthClient implicit grant url generator with crypto",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/AuthClient.spec.js.html#lineNumber27",
+    "AuthClient implicit grant url generator without crypto",
     "test"
   ],
   [
@@ -372,76 +474,196 @@ window.esdocSearchIndex = [
     "typedef"
   ],
   [
-    "src/crypto.js",
-    "file/src/Crypto.js.html",
-    "src/Crypto.js",
+    "src/authclient.spec.js",
+    "test-file/src/AuthClient.spec.js.html",
+    "src/AuthClient.spec.js",
+    "testFile"
+  ],
+  [
+    "src/authclient.spec.js",
+    "file/src/AuthClient.spec.js.html",
+    "src/AuthClient.spec.js",
     "file"
   ],
   [
-    "src/crypto.js~crypto#bytestobase64",
-    "class/src/Crypto.js~Crypto.html#instance-method-bytesToBase64",
-    "src/Crypto.js~Crypto#bytesToBase64",
-    "method"
-  ],
-  [
-    "src/crypto.js~crypto#random",
-    "class/src/Crypto.js~Crypto.html#instance-method-random",
-    "src/Crypto.js~Crypto#random",
-    "method"
-  ],
-  [
-    "src/crypto.js~crypto#sha256",
-    "class/src/Crypto.js~Crypto.html#instance-method-sha256",
-    "src/Crypto.js~Crypto#sha256",
-    "method"
-  ],
-  [
-    "src/store.js",
-    "file/src/Store.js.html",
-    "src/Store.js",
+    "src/crypto.node.js",
+    "file/src/Crypto.node.js.html",
+    "src/Crypto.node.js",
     "file"
   ],
   [
-    "src/store.js~store#_prefix",
-    "class/src/Store.js~Store.html#instance-member-_prefix",
-    "src/Store.js~Store#_prefix",
+    "src/crypto.node.js~nodecrypto#bytestobase64",
+    "class/src/Crypto.node.js~NodeCrypto.html#instance-method-bytesToBase64",
+    "src/Crypto.node.js~NodeCrypto#bytesToBase64",
+    "method"
+  ],
+  [
+    "src/crypto.node.js~nodecrypto#random",
+    "class/src/Crypto.node.js~NodeCrypto.html#instance-method-random",
+    "src/Crypto.node.js~NodeCrypto#random",
+    "method"
+  ],
+  [
+    "src/crypto.node.js~nodecrypto#sha256",
+    "class/src/Crypto.node.js~NodeCrypto.html#instance-method-sha256",
+    "src/Crypto.node.js~NodeCrypto#sha256",
+    "method"
+  ],
+  [
+    "src/crypto.web.js",
+    "file/src/Crypto.web.js.html",
+    "src/Crypto.web.js",
+    "file"
+  ],
+  [
+    "src/crypto.web.js~crypto#bytestobase64",
+    "class/src/Crypto.web.js~Crypto.html#instance-method-bytesToBase64",
+    "src/Crypto.web.js~Crypto#bytesToBase64",
+    "method"
+  ],
+  [
+    "src/crypto.web.js~crypto#random",
+    "class/src/Crypto.web.js~Crypto.html#instance-method-random",
+    "src/Crypto.web.js~Crypto#random",
+    "method"
+  ],
+  [
+    "src/crypto.web.js~crypto#sha256",
+    "class/src/Crypto.web.js~Crypto.html#instance-method-sha256",
+    "src/Crypto.web.js~Crypto#sha256",
+    "method"
+  ],
+  [
+    "src/store.node.js",
+    "file/src/Store.node.js.html",
+    "src/Store.node.js",
+    "file"
+  ],
+  [
+    "src/store.node.js~nodestore#_data",
+    "class/src/Store.node.js~NodeStore.html#instance-member-_data",
+    "src/Store.node.js~NodeStore#_data",
     "member"
   ],
   [
-    "src/store.js~store#constructor",
-    "class/src/Store.js~Store.html#instance-constructor-constructor",
-    "src/Store.js~Store#constructor",
+    "src/store.node.js~nodestore#constructor",
+    "class/src/Store.node.js~NodeStore.html#instance-constructor-constructor",
+    "src/Store.node.js~NodeStore#constructor",
     "method"
   ],
   [
-    "src/store.js~store#getitem",
-    "class/src/Store.js~Store.html#instance-method-getItem",
-    "src/Store.js~Store#getItem",
+    "src/store.node.js~nodestore#getitem",
+    "class/src/Store.node.js~NodeStore.html#instance-method-getItem",
+    "src/Store.node.js~NodeStore#getItem",
     "method"
   ],
   [
-    "src/store.js~store#removeitem",
-    "class/src/Store.js~Store.html#instance-method-removeItem",
-    "src/Store.js~Store#removeItem",
+    "src/store.node.js~nodestore#removeitem",
+    "class/src/Store.node.js~NodeStore.html#instance-method-removeItem",
+    "src/Store.node.js~NodeStore#removeItem",
     "method"
   ],
   [
-    "src/store.js~store#setitem",
-    "class/src/Store.js~Store.html#instance-method-setItem",
-    "src/Store.js~Store#setItem",
+    "src/store.node.js~nodestore#setitem",
+    "class/src/Store.node.js~NodeStore.html#instance-method-setItem",
+    "src/Store.node.js~NodeStore#setItem",
     "method"
   ],
   [
-    "src/filler.spec.js",
-    "file/src/filler.spec.js.html",
-    "src/filler.spec.js",
+    "src/store.web.js",
+    "file/src/Store.web.js.html",
+    "src/Store.web.js",
     "file"
   ],
   [
-    "src/filler.spec.js",
-    "test-file/src/filler.spec.js.html",
-    "src/filler.spec.js",
-    "testFile"
+    "src/store.web.js~store#_prefix",
+    "class/src/Store.web.js~Store.html#instance-member-_prefix",
+    "src/Store.web.js~Store#_prefix",
+    "member"
+  ],
+  [
+    "src/store.web.js~store#constructor",
+    "class/src/Store.web.js~Store.html#instance-constructor-constructor",
+    "src/Store.web.js~Store#constructor",
+    "method"
+  ],
+  [
+    "src/store.web.js~store#getitem",
+    "class/src/Store.web.js~Store.html#instance-method-getItem",
+    "src/Store.web.js~Store#getItem",
+    "method"
+  ],
+  [
+    "src/store.web.js~store#removeitem",
+    "class/src/Store.web.js~Store.html#instance-method-removeItem",
+    "src/Store.web.js~Store#removeItem",
+    "method"
+  ],
+  [
+    "src/store.web.js~store#setitem",
+    "class/src/Store.web.js~Store.html#instance-method-setItem",
+    "src/Store.web.js~Store#setItem",
+    "method"
+  ],
+  [
+    "src/__mocks__/axios.js",
+    "file/src/__mocks__/axios.js.html",
+    "src/__mocks__/axios.js",
+    "file"
+  ],
+  [
+    "src/__mocks__/axios.js~axios#clear",
+    "class/src/__mocks__/axios.js~Axios.html#instance-method-clear",
+    "src/__mocks__/axios.js~Axios#clear",
+    "method"
+  ],
+  [
+    "src/__mocks__/axios.js~axios#constructor",
+    "class/src/__mocks__/axios.js~Axios.html#instance-constructor-constructor",
+    "src/__mocks__/axios.js~Axios#constructor",
+    "method"
+  ],
+  [
+    "src/__mocks__/axios.js~axios#extra",
+    "class/src/__mocks__/axios.js~Axios.html#instance-member-extra",
+    "src/__mocks__/axios.js~Axios#extra",
+    "member"
+  ],
+  [
+    "src/__mocks__/axios.js~axios#get",
+    "class/src/__mocks__/axios.js~Axios.html#instance-method-get",
+    "src/__mocks__/axios.js~Axios#get",
+    "method"
+  ],
+  [
+    "src/__mocks__/axios.js~axios#getmock",
+    "class/src/__mocks__/axios.js~Axios.html#instance-method-getMock",
+    "src/__mocks__/axios.js~Axios#getMock",
+    "method"
+  ],
+  [
+    "src/__mocks__/axios.js~axios#mocks",
+    "class/src/__mocks__/axios.js~Axios.html#instance-member-mocks",
+    "src/__mocks__/axios.js~Axios#mocks",
+    "member"
+  ],
+  [
+    "src/__mocks__/axios.js~axios#post",
+    "class/src/__mocks__/axios.js~Axios.html#instance-method-post",
+    "src/__mocks__/axios.js~Axios#post",
+    "method"
+  ],
+  [
+    "src/__mocks__/axios.js~axios#setextra",
+    "class/src/__mocks__/axios.js~Axios.html#instance-method-setExtra",
+    "src/__mocks__/axios.js~Axios#setExtra",
+    "method"
+  ],
+  [
+    "src/__mocks__/axios.js~axios#setmock",
+    "class/src/__mocks__/axios.js~Axios.html#instance-method-setMock",
+    "src/__mocks__/axios.js~Axios#setMock",
+    "method"
   ],
   [
     "src/index.js",

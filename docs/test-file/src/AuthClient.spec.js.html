@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/AuthClient.spec.js | Authenticatornator</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+<meta name="description" content="this is awesome library"><meta property="twitter:card" content="summary"><meta property="twitter:title" content="Authenticatornator"><meta property="twitter:description" content="this is awesome library"></head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+<a style="position:relative; top:3px;" href="https://github.com/morten-olsen/authclient"><img width="20px" src="./image/github.png"></a></header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/AuthClient.js~AuthClient.html">AuthClient</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Crypto.node.js~NodeCrypto.html">NodeCrypto</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Crypto.web.js~Crypto.html">Crypto</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Store.node.js~NodeStore.html">NodeStore</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Store.web.js~Store.html">Store</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Options">Options</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ResponseTypes">ResponseTypes</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TokenResponse">TokenResponse</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TokenTypes">TokenTypes</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#--mocks--">__mocks__</a><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/__mocks__/axios.js~Axios.html">Axios</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-axios">axios</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/AuthClient.spec.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import url from &apos;url&apos;;
+import axios from &apos;axios&apos;;
+import querystring from &apos;querystring&apos;;
+import AuthClient from &apos;./AuthClient&apos;;
+import Crypto from &apos;./Crypto.node&apos;;
+import Store from &apos;./Store.node&apos;;
+import config from &apos;../demo/config&apos;;
+
+jest.mock(&apos;axios&apos;);
+
+describe(&apos;AuthClient&apos;, () =&gt; {
+  beforeEach(() =&gt; {
+    axios.clear();
+    axios.setMock(&apos;get&apos;, &apos;https://authclient-demo.eu.auth0.com/.well-known/openid-configuration&apos;, {
+      authorization_endpoint: &apos;https://authclient-demo.eu.auth0.com/authorize&apos;,
+      token_endpoint: &apos;https://authclient-demo.eu.auth0.com/token&apos;,
+    });
+    axios.setMock(&apos;post&apos;, &apos;https://authclient-demo.eu.auth0.com/token&apos;, (data, extra) =&gt; extra.tokenAssert(data));
+  });
+
+  describe(&apos;implicit grant&apos;, () =&gt; {
+    describe(&apos;url generator&apos;, () =&gt; {
+      it(&apos;without crypto&apos;, async () =&gt; {
+        const client = new AuthClient(config.implicit);
+        const result = await client.getLoginUrl();
+        const parsed = url.parse(result);
+        const query = querystring.parse(parsed.query);
+        expect(parsed.host).toBe(&apos;authclient-demo.eu.auth0.com&apos;);
+        expect(query.client_id).toBe(config.implicit.clientId);
+        expect(query.code_challenge).toBeUndefined();
+        expect(query.code_challenge_method).toBeUndefined();
+        expect(query.redirect_uri).toBe(&apos;about://blank&apos;);
+        expect(query.response_type).toBe(&apos;id_token token&apos;);
+        expect(query.scope).toBe(&apos;openid profile&apos;);
+        expect(query.state).toBeUndefined();
+      });
+
+      it(&apos;with crypto&apos;, async () =&gt; {
+        const client = new AuthClient({
+          ...config.implicit,
+          crypto: new Crypto(),
+        });
+        const result = await client.getLoginUrl();
+        const parsed = url.parse(result);
+        const query = querystring.parse(parsed.query);
+        expect(parsed.host).toBe(&apos;authclient-demo.eu.auth0.com&apos;);
+        expect(query.client_id).toBe(config.implicit.clientId);
+        expect(query.code_challenge).toBeDefined();
+        expect(query.code_challenge_method).toBe(&apos;S256&apos;);
+        expect(query.redirect_uri).toBe(&apos;about://blank&apos;);
+        expect(query.response_type).toBe(&apos;id_token token&apos;);
+        expect(query.scope).toBe(&apos;openid profile&apos;);
+        expect(query.state).toBeDefined();
+      });
+    });
+
+
+    describe(&apos;token exchange&apos;, () =&gt; {
+      it(&apos;with query parameter&apos;, async () =&gt; {
+        const client = new AuthClient(config.implicit);
+        const token = await client.exchangeToken(&apos;https://localhost?access_token=test&apos;);
+        expect(token.access_token).toBe(&apos;test&apos;);
+      });
+
+      it(&apos;with hash&apos;, async () =&gt; {
+        const client = new AuthClient(config.implicit);
+        const token = await client.exchangeToken(&apos;https://localhost#access_token=test&apos;);
+        expect(token.access_token).toBe(&apos;test&apos;);
+      });
+    });
+  });
+
+  describe(&apos;authentication code grant&apos;, () =&gt; {
+    describe(&apos;url generator&apos;, () =&gt; {
+      it(&apos;without crypto&apos;, async () =&gt; {
+        const client = new AuthClient(config.authCode);
+        const result = await client.getLoginUrl();
+        const parsed = url.parse(result);
+        const query = querystring.parse(parsed.query);
+        expect(parsed.host).toBe(&apos;authclient-demo.eu.auth0.com&apos;);
+        expect(query.client_id).toBe(config.authCode.clientId);
+        expect(query.code_challenge).toBeUndefined();
+        expect(query.code_challenge_method).toBeUndefined();
+        expect(query.redirect_uri).toBe(&apos;about://blank&apos;);
+        expect(query.response_type).toBe(&apos;code&apos;);
+        expect(query.scope).toBe(&apos;openid profile&apos;);
+        expect(query.state).toBeUndefined();
+      });
+
+      it(&apos;with crypto&apos;, async () =&gt; {
+        const client = new AuthClient({
+          ...config.authCode,
+          crypto: new Crypto(),
+        });
+        const result = await client.getLoginUrl();
+        const parsed = url.parse(result);
+        const query = querystring.parse(parsed.query);
+        expect(parsed.host).toBe(&apos;authclient-demo.eu.auth0.com&apos;);
+        expect(query.client_id).toBe(config.authCode.clientId);
+        expect(query.code_challenge).toBeDefined();
+        expect(query.code_challenge_method).toBe(&apos;S256&apos;);
+        expect(query.redirect_uri).toBe(&apos;about://blank&apos;);
+        expect(query.response_type).toBe(&apos;code&apos;);
+        expect(query.scope).toBe(&apos;openid profile&apos;);
+        expect(query.state).toBeDefined();
+      });
+    });
+
+    describe(&apos;token exchange&apos;, () =&gt; {
+      it(&apos;without crypto&apos;, async () =&gt; {
+        const client = new AuthClient(config.authCode);
+        axios.setExtra({
+          tokenAssert: (data) =&gt; {
+            expect(data.client_id).toBe(config.authCode.clientId);
+            expect(data.client_secret).toBe(config.authCode.clientSecret);
+            expect(data.redirect_uri).toBe(&apos;about://blank&apos;);
+            expect(data.grant_type).toBe(&apos;authorization_code&apos;);
+            expect(data.username).toBeUndefined();
+            expect(data.password).toBeUndefined();
+            expect(data.code).toBe(&apos;test&apos;);
+            expect(data.scope).toBe(&apos;openid profile&apos;);
+            expect(data.refresh_token).toBeUndefined();
+            expect(data.code_verifier).toBeUndefined();
+            return {
+              access_token: &apos;test2&apos;,
+            };
+          },
+        });
+        const token = await client.exchangeToken(&apos;https://localhost?code=test&apos;);
+        expect(token.access_token).toBe(&apos;test2&apos;);
+      });
+
+      it(&apos;with crypto&apos;, async () =&gt; {
+        const store = new Store();
+        const crypto = new Crypto();
+        const client = new AuthClient({
+          ...config.authCode,
+          crypto,
+          store,
+        });
+        const result = await client.getLoginUrl();
+        const parsed = url.parse(result);
+        const query = querystring.parse(parsed.query);
+        expect(query.state).toBeDefined();
+        axios.setExtra({
+          tokenAssert: async (data) =&gt; {
+            expect(data.client_id).toBe(config.authCode.clientId);
+            expect(data.client_secret).toBe(config.authCode.clientSecret);
+            expect(data.redirect_uri).toBe(&apos;about://blank&apos;);
+            expect(data.grant_type).toBe(&apos;authorization_code&apos;);
+            expect(data.username).toBeUndefined();
+            expect(data.password).toBeUndefined();
+            expect(data.code).toBe(&apos;test&apos;);
+            expect(data.scope).toBe(&apos;openid profile&apos;);
+            expect(data.refresh_token).toBeUndefined();
+            expect(data.code_verifier).toBeDefined();
+            const challenge = query.code_challenge;
+            expect(crypto.bytesToBase64(await crypto.sha256(data.code_verifier))).toBe(challenge);
+            expect(challenge).toBeDefined();
+            return {
+              access_token: &apos;test2&apos;,
+            };
+          },
+        });
+        const token = await client.exchangeToken(`https://localhost?code=test&amp;state=${query.state}`);
+        expect(token.access_token).toBe(&apos;test2&apos;);
+      });
+    });
+  });
+});
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
