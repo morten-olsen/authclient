@@ -8,7 +8,7 @@ module.exports = {
   output: {
     path: path.join(__dirname, 'dist'),
     filename: `${packageInfo.name}.min.js`,
-    library: packageInfo.name,
+    library: 'Authenticatornator',
     libraryTarget: 'umd',
   },
   resolve: {
