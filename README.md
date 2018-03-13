@@ -71,3 +71,4 @@ If jusing password grant, you can simply use `const token = await authClient.get
   </body>
 </html>
 ```
+

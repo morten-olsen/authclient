@@ -1,5 +1,6 @@
-module.exports = () => ({
+module.exports = (wallaby) => ({
   files: [
+    'demo/**/*.js',
     'src/**/*.js',
     'src/**/*.jsx',
     '!src/**/*.spec.js',
@@ -17,6 +18,10 @@ module.exports = () => ({
   env: {
     type: 'node',
     runner: 'node',
+  },
+
+  compilers: {
+    '**/*.js': wallaby.compilers.babel()
   },
 
   testFramework: 'jest'

@@ -1,11 +1,7 @@
 import axios from 'axios';
-import Crypto from './Crypto';
-import Store from './Store';
 
 const defaultOptions = {
-  store: new Store('auth_'),
   tokenType: 'authorization_code',
-  crypto: new Crypto(),
 };
 
 /**
@@ -81,12 +77,12 @@ class AuthClient {
   }
 
   /** @ignore */
-  async _getKeys(options) {
+  /* async _getKeys(options) {
     const { baseUrl } = options;
     const url = `${baseUrl}/.well-known/openid-configuration/jwks`;
     const response = await axios.get(url);
     return response.data;
-  }
+  } */
 
   /** @ignore */
   async _createVerifier(options) {
@@ -105,19 +101,13 @@ class AuthClient {
     const { store, crypto } = this._options;
     /* eslint-disable camelcase */
     const {
-      clientId: client_id,
-      redirectUri: redirect_uri,
-      scopes = [],
-      responseTypes = ['code'],
-      extra = {},
+      clientId: client_id, redirectUri: redirect_uri,
+      scopes = [], responseTypes = ['code'], extra = {},
       pkce: pkceEnabled,
     } = options;
 
-    const state = crypto.random();
-    let pkce;
-    if (crypto && pkceEnabled) {
-      pkce = await this._createVerifier(options);
-    }
+    const state = crypto ? crypto.random() : undefined;
+    const pkce = crypto && pkceEnabled ? await this._createVerifier(options) : undefined;
 
     const params = {
       client_id,
@@ -127,16 +117,13 @@ class AuthClient {
       code_challenge_method: pkce ? 'S256' : undefined,
       response_type: responseTypes.join(' '),
       state,
-      nonce: responseTypes.includes('id_token') ? crypto.random() : undefined,
+      nonce: responseTypes.includes('id_token') && crypto ? crypto.random() : undefined,
       ...extra,
     };
     /* eslint-enable camelcase */
-
-    await store.setItem(state, {
-      ...params,
-      ...pkce,
-    });
-
+    if (store) {
+      await store.setItem(state, { ...params, ...pkce });
+    }
     const parts = Object.keys(params).filter(key => params[key]).map(key => `${key}=${encodeURIComponent(params[key])}`);
     return `${authorizationEndpoint}?${parts.join('&')}`;
   }
@@ -159,21 +146,12 @@ class AuthClient {
   /** @ignore */
   async _requestToken(options, config) {
     const {
-      clientId,
-      tokenType,
-      refreshToken,
-      store,
-      code,
-      sessionId,
-      clientSecret,
-      redirectUri,
-      username,
-      password,
-      // acrs,
-      // scopes,
+      clientId, tokenType, refreshToken,
+      store, code, sessionId, clientSecret,
+      redirectUri, username, password, scopes,
     } = options;
 
-    const session = await store.getItem(sessionId);
+    const session = store ? await store.getItem(sessionId) : undefined;
     const response = await axios.post(config.token_endpoint, {
       client_id: clientId,
       client_secret: clientSecret,
@@ -182,8 +160,7 @@ class AuthClient {
       username,
       password,
       code,
-      // scope: scopes ? scopes.join(' ') : undefined,
-      // acr_values: acrs,
+      scope: scopes ? scopes.join(' ') : undefined,
       refresh_token: refreshToken,
       code_verifier: session ? session.verifier : undefined,
     });
@@ -245,7 +222,9 @@ class AuthClient {
     const codeResponse = await this._parseUrl(url);
 
     if (codeResponse.access_token) {
-      store.removeItem(codeResponse.session_state);
+      if (store) {
+        store.removeItem(codeResponse.session_state);
+      }
       return codeResponse;
     } else if (codeResponse.code) {
       const config = await this._getConfiguration(extendedOptions);
@@ -275,12 +254,11 @@ class AuthClient {
   async getToken(options) {
     const extendedOptions = {
       ...this._options,
+      scopes: undefined,
       options,
     };
     const config = await this._getConfiguration(extendedOptions);
     const response = await this._requestToken(extendedOptions, config);
-
-    console.log(response);
     return response;
   }
 }

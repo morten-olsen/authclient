@@ -11,9 +11,14 @@
     "module-resolver", {
       "root": ["./src"]
     }
-  ], [
-    "transform-private", {
-      "pattern": "^_"
+  ], "transform-flow-strip-types"],
+  "env": {
+    "production": {
+      "plugins": [[
+        "transform-private", {
+          "pattern": "^_"
+        }
+      ]]
     }
-  ], "transform-flow-strip-types"]
+  }
 }
