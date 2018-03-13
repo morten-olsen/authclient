@@ -76,7 +76,7 @@ const authClient = new AuthClient({
         const button = document.querySelector(&apos;button&apos;);
         const view = document.querySelector(&apos;div&apos;);
         button.onClick = async () =&gt; {
-          const url = await authClient.getLoginUrl();
+          window.location.href = await authClient.getLoginUrl();
         }
         if (location.hash) {
           const token = await authClient.exchangeToken(window.location.href);
