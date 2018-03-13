@@ -5,7 +5,7 @@
   "src": "src/index.js",
   "license": "MIT",
   "scripts": {
-    "demo": "parcel -p 3000 -d docs/demo demo/index.html",
+    "demo": "parcel -p 3000 -d docs/demo --public-url \"/authclient/demo/\" demo/index.html",
     "test:lint": "eslint src",
     "test:jest": "jest",
     "test": "npm run test:lint && npm run test:jest",
