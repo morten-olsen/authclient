@@ -1,5 +1,9 @@
 # Authenticatornator
 
+[![Coverage Status](https://coveralls.io/repos/github/morten-olsen/authclient/badge.svg?branch=master)](https://coveralls.io/github/morten-olsen/authclient?branch=master) [![Build Status](https://www.travis-ci.org/morten-olsen/authclient.svg?branch=master)](https://www.travis-ci.org/morten-olsen/authclient) 
+[![npm](https://img.shields.io/npm/dm/authenticatornator.svg)](https://www.npmjs.com/package/authenticatornator) 
+[![npm](https://img.shields.io/npm/v/authenticatornator.svg)](https://www.npmjs.com/package/authenticatornator) [![Maintainability](https://api.codeclimate.com/v1/badges/7d192fd20aeadfc34bc7/maintainability)](https://codeclimate.com/github/morten-olsen/authclient/maintainability) [![Known Vulnerabilities](https://snyk.io/test/github/morten-olsen/authclient/badge.svg?targetFile=package.json)](https://snyk.io/test/github/morten-olsen/authclient?targetFile=package.json)
+
 [Demo](https://morten-olsen.github.io/authclient/demo)
 [Documentation](https://morten-olsen.github.io/authclient/)
 

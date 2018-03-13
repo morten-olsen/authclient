@@ -19,13 +19,13 @@ window.esdocSearchIndex = [
   ],
   [
     "",
-    "test-file/src/filler.spec.js.html#lineNumber1",
+    "test-file/src/filler.spec.js.html#lineNumber3",
     "fill",
     "test"
   ],
   [
     "",
-    "test-file/src/filler.spec.js.html#lineNumber2",
+    "test-file/src/filler.spec.js.html#lineNumber4",
     "fill test",
     "test"
   ],

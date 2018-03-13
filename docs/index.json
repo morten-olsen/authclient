@@ -1308,7 +1308,7 @@
     "__docId__": 69,
     "kind": "file",
     "name": "src/Crypto.js",
-    "content": "const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\nconst HAS_CRYPTO = typeof window !== 'undefined' && !!global.crypto;\nconst encoder = new global.TextEncoder('utf-8');\n\n/** @ignore */\nconst arrayBufferToBase64 = (buffer) => {\n  let binary = '';\n  const bytes = new global.Uint8Array(buffer);\n  const len = bytes.byteLength;\n  for (let i = 0; i < len; i += 1) {\n    binary += String.fromCharCode(bytes[i]);\n  }\n  return global.btoa(binary).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '');\n};\n\n/** @ignore */\nexport const bufferToString = (buffer) => {\n  const state = [];\n  for (let i = 0; i < buffer.byteLength; i += 1) {\n    const index = (buffer[i] % CHARSET.length) | 0; // eslint-disable-line no-bitwise\n    state.push(CHARSET[index]);\n  }\n  return state.join('').replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '');\n};\n\nclass Crypto {\n  async sha256(value) {\n    const encoded = encoder.encode(value);\n    const hashed = await global.crypto.subtle.digest('SHA-256', encoded);\n    return hashed;\n  }\n\n  bytesToBase64(value) {\n    return arrayBufferToBase64(value);\n  }\n\n  random(sizeInBytes = 32) {\n    const buffer = new Uint8Array(sizeInBytes);\n    if (HAS_CRYPTO) {\n      global.crypto.getRandomValues(buffer);\n    } else {\n      // fall back to Math.random() if nothing else is available\n      for (let i = 0; i < sizeInBytes; i += 1) {\n        buffer[i] = Math.random();\n      }\n    }\n    return bufferToString(buffer);\n  }\n}\n\nexport default Crypto;\n",
+    "content": "const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\nconst HAS_CRYPTO = typeof window !== 'undefined' && !!global.crypto;\nconst encoder = global.TextEncoder ? new global.TextEncoder('utf-8') : undefined;\n\n/** @ignore */\nconst arrayBufferToBase64 = (buffer) => {\n  let binary = '';\n  const bytes = new global.Uint8Array(buffer);\n  const len = bytes.byteLength;\n  for (let i = 0; i < len; i += 1) {\n    binary += String.fromCharCode(bytes[i]);\n  }\n  return global.btoa(binary).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '');\n};\n\n/** @ignore */\nexport const bufferToString = (buffer) => {\n  const state = [];\n  for (let i = 0; i < buffer.byteLength; i += 1) {\n    const index = (buffer[i] % CHARSET.length) | 0; // eslint-disable-line no-bitwise\n    state.push(CHARSET[index]);\n  }\n  return state.join('').replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '');\n};\n\nclass Crypto {\n  async sha256(value) {\n    const encoded = encoder.encode(value);\n    const hashed = await global.crypto.subtle.digest('SHA-256', encoded);\n    return hashed;\n  }\n\n  bytesToBase64(value) {\n    return arrayBufferToBase64(value);\n  }\n\n  random(sizeInBytes = 32) {\n    const buffer = new Uint8Array(sizeInBytes);\n    if (HAS_CRYPTO) {\n      global.crypto.getRandomValues(buffer);\n    } else {\n      // fall back to Math.random() if nothing else is available\n      for (let i = 0; i < sizeInBytes; i += 1) {\n        buffer[i] = Math.random();\n      }\n    }\n    return bufferToString(buffer);\n  }\n}\n\nexport default Crypto;\n",
     "static": true,
     "longname": "/Users/morten/Projects/sampension/auth-client/src/Crypto.js",
     "access": "public",
@@ -1749,7 +1749,7 @@
     "__docId__": 88,
     "kind": "file",
     "name": "src/filler.spec.js",
-    "content": "describe('fill', () => {\n  it('test');\n});\n",
+    "content": "import './AuthClient';\n\ndescribe('fill', () => {\n  it('test', () => {\n\n  });\n});\n",
     "static": true,
     "longname": "/Users/morten/Projects/sampension/auth-client/src/filler.spec.js",
     "access": "public",
@@ -1806,7 +1806,7 @@
   },
   {
     "kind": "index",
-    "content": "# Authenticatornator\n\n[Demo](https://morten-olsen.github.io/authclient/demo)\n[Documentation](https://morten-olsen.github.io/authclient/)\n\n## Usage\n\n### Creating a client\n\n```javascript\nimport AuthClient from 'authenticatornator';\n\nconst authClient = new AuthClient({\n    baseUrl: 'https://your-server',\n    clientId: 'ClientId',\n    redirectUri: `${global.location.protocol}//${global.location.host}`,\n    responseTypes: ['id_token', 'token'],\n    scopes: [\n      'openid',\n      'profile',\n    ],\n  });\n```\n\n### Creating a login url\n\nA login url is obtained by calling `const url = await authClient.getLoginUrl();`. This url should then be presented to the user `window.location.href = url;`, or what is best suited for the platform that you are working on\n\n### Getting the token\n\nOnce the user has logged into the login page, they should be redirected to the `redirect_uri` with some additional information which can then be used to get the token. To exchange these informations, simply call `const token = await authClient.exchangeToken(window.location.href);`\n\nIf jusing password grant, you can simply use `const token = await authClient.getToken({ username: 'admin', password: 'god'});` or to renew a token using a refresh token `const token = await authClient.getToken({refreshToken: '...'});`\n\n## Minimal example\n\n```html\n<html>\n  <body>\n    <div></div>\n    <button>Login</button>\n    <script>\n      const boot = async () => {\n        const authClient = new AuthClient({\n          baseUrl: 'https://your-server',\n          clientId: 'ClientId',\n          redirectUri: `${global.location.protocol}//${global.location.host}`,\n          responseTypes: ['id_token', 'token'],\n          scopes: [\n            'openid',\n            'profile',\n          ],\n        });\n        const button = document.querySelector('button');\n        const view = document.querySelector('div');\n        button.onClick = async () => {\n          window.location.href = await authClient.getLoginUrl();\n        }\n        if (location.hash) {\n          const token = await authClient.exchangeToken(window.location.href);\n          view.innerHTML = JSON.stringify(token, null, '  ');\n        }\n      };\n      boot();\n    </script>\n  </body>\n</html>\n```",
+    "content": "# Authenticatornator\n\n[![Coverage Status](https://coveralls.io/repos/github/morten-olsen/authclient/badge.svg?branch=master)](https://coveralls.io/github/morten-olsen/authclient?branch=master) [![Build Status](https://www.travis-ci.org/morten-olsen/authclient.svg?branch=master)](https://www.travis-ci.org/morten-olsen/authclient) \n[![npm](https://img.shields.io/npm/dm/authenticatornator.svg)](https://www.npmjs.com/package/authenticatornator) \n[![npm](https://img.shields.io/npm/v/authenticatornator.svg)](https://www.npmjs.com/package/authenticatornator) [![Maintainability](https://api.codeclimate.com/v1/badges/7d192fd20aeadfc34bc7/maintainability)](https://codeclimate.com/github/morten-olsen/authclient/maintainability) [![Known Vulnerabilities](https://snyk.io/test/github/morten-olsen/authclient/badge.svg?targetFile=package.json)](https://snyk.io/test/github/morten-olsen/authclient?targetFile=package.json)\n\n[Demo](https://morten-olsen.github.io/authclient/demo)\n[Documentation](https://morten-olsen.github.io/authclient/)\n\n## Usage\n\n### Creating a client\n\n```javascript\nimport AuthClient from 'authenticatornator';\n\nconst authClient = new AuthClient({\n    baseUrl: 'https://your-server',\n    clientId: 'ClientId',\n    redirectUri: `${global.location.protocol}//${global.location.host}`,\n    responseTypes: ['id_token', 'token'],\n    scopes: [\n      'openid',\n      'profile',\n    ],\n  });\n```\n\n### Creating a login url\n\nA login url is obtained by calling `const url = await authClient.getLoginUrl();`. This url should then be presented to the user `window.location.href = url;`, or what is best suited for the platform that you are working on\n\n### Getting the token\n\nOnce the user has logged into the login page, they should be redirected to the `redirect_uri` with some additional information which can then be used to get the token. To exchange these informations, simply call `const token = await authClient.exchangeToken(window.location.href);`\n\nIf jusing password grant, you can simply use `const token = await authClient.getToken({ username: 'admin', password: 'god'});` or to renew a token using a refresh token `const token = await authClient.getToken({refreshToken: '...'});`\n\n## Minimal example\n\n```html\n<html>\n  <body>\n    <div></div>\n    <button>Login</button>\n    <script>\n      const boot = async () => {\n        const authClient = new AuthClient({\n          baseUrl: 'https://your-server',\n          clientId: 'ClientId',\n          redirectUri: `${global.location.protocol}//${global.location.host}`,\n          responseTypes: ['id_token', 'token'],\n          scopes: [\n            'openid',\n            'profile',\n          ],\n        });\n        const button = document.querySelector('button');\n        const view = document.querySelector('div');\n        button.onClick = async () => {\n          window.location.href = await authClient.getLoginUrl();\n        }\n        if (location.hash) {\n          const token = await authClient.exchangeToken(window.location.href);\n          view.innerHTML = JSON.stringify(token, null, '  ');\n        }\n      };\n      boot();\n    </script>\n  </body>\n</html>\n```",
     "longname": "/Users/morten/Projects/sampension/auth-client/README.md",
     "name": "./README.md",
     "static": true,
@@ -1824,7 +1824,7 @@
     "__docId__": 92,
     "kind": "testFile",
     "name": "src/filler.spec.js",
-    "content": "describe('fill', () => {\n  it('test');\n});\n",
+    "content": "import './AuthClient';\n\ndescribe('fill', () => {\n  it('test', () => {\n\n  });\n});\n",
     "static": true,
     "longname": "/Users/morten/Projects/sampension/auth-client/src/filler.spec.js",
     "access": null,
@@ -1842,7 +1842,7 @@
     "longname": "src/filler.spec.js~describe0",
     "access": null,
     "description": "fill",
-    "lineNumber": 1
+    "lineNumber": 3
   },
   {
     "__docId__": 94,
@@ -1855,6 +1855,6 @@
     "longname": "src/filler.spec.js~describe0.it1",
     "access": null,
     "description": "test",
-    "lineNumber": 2
+    "lineNumber": 4
   }
 ]
