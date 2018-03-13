@@ -32,6 +32,7 @@
     "esdoc": "^1.0.4",
     "esdoc-babel-plugin": "^1.0.1",
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
+    "esdoc-importpath-plugin": "^1.0.1",
     "esdoc-standard-plugin": "^1.0.0",
     "eslint": "^4.16.0",
     "eslint-config-airbnb": "^16.1.0",
@@ -46,9 +47,9 @@
     "parcel-bundler": "^1.6.2",
     "semantic-release": "^15.0.3",
     "semantic-release-cli": "^3.6.4",
+    "travis-deploy-once": "^4.4.0",
     "uglifyjs-webpack-plugin": "^1.2.3",
-    "webpack": "^3.10.0",
-    "travis-deploy-once": "^4.4.0"
+    "webpack": "^3.10.0"
   },
   "jest": {
     "coverageDirectory": "./coverage",

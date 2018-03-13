@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <base data-ice="baseUrl" href="../../">
-  <title data-ice="title">src/AuthClient.js | authclient</title>
+  <title data-ice="title">src/AuthClient.js | authenticatornator</title>
   <link type="text/css" rel="stylesheet" href="css/style.css">
   <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
   <script src="script/prettify/prettify.js"></script>
@@ -16,7 +16,7 @@
   
   <a href="identifiers.html">Reference</a>
   <a href="source.html">Source</a>
-  
+  <a href="test.html" data-ice="testLink">Test</a>
   <div class="search-box">
   <span>
     <img src="./image/search.png">
@@ -24,7 +24,7 @@
   </span>
     <ul class="search-result"></ul>
   </div>
-</header>
+<a style="position:relative; top:3px;" href="https://github.com/morten-olsen/authclient.git"><img width="20px" src="./image/github.png"></a></header>
 
 <nav class="navigation" data-ice="nav"><div>
   <ul>
@@ -153,19 +153,21 @@ class AuthClient {
       scopes = [],
       responseTypes = [&apos;code&apos;],
       extra = {},
+      pkce: pkceEnabled,
     } = options;
 
     const state = crypto.random();
     let pkce;
-    if (crypto) {
+    if (crypto &amp;&amp; pkceEnabled) {
       pkce = await this._createVerifier(options);
     }
 
     const params = {
       client_id,
       redirect_uri,
-      scope: scopes.join(&apos; &apos;),
+      scope: scopes ? scopes.join(&apos; &apos;) : undefined,
       code_challenge: pkce ? pkce.challenge : undefined,
+      code_challenge_method: pkce ? &apos;S256&apos; : undefined,
       response_type: responseTypes.join(&apos; &apos;),
       state,
       nonce: responseTypes.includes(&apos;id_token&apos;) ? crypto.random() : undefined,
@@ -178,13 +180,16 @@ class AuthClient {
       ...pkce,
     });
 
-    const parts = Object.keys(params).map(key =&gt; `${key}=${encodeURIComponent(params[key])}`);
+    const parts = Object.keys(params).filter(key =&gt; params[key]).map(key =&gt; `${key}=${encodeURIComponent(params[key])}`);
     return `${authorizationEndpoint}?${parts.join(&apos;&amp;&apos;)}`;
   }
 
   /** @ignore */
   _parseUrl(url) {
-    const [, query] = url.split(&apos;#&apos;);
+    const [, query] = url.split(url.indexOf(&apos;#&apos;) &gt;= 0 ? &apos;#&apos; : &apos;?&apos;);
+    if (!query) {
+      return {};
+    }
     return query.split(&apos;&amp;&apos;).reduce((output, current) =&gt; {
       const [name, value] = current.split(&apos;=&apos;);
       return {
@@ -204,22 +209,24 @@ class AuthClient {
       code,
       sessionId,
       clientSecret,
+      redirectUri,
       username,
       password,
-      acrs,
-      scopes,
+      // acrs,
+      // scopes,
     } = options;
 
-    const session = store.getItem(sessionId);
+    const session = await store.getItem(sessionId);
     const response = await axios.post(config.token_endpoint, {
       client_id: clientId,
       client_secret: clientSecret,
+      redirect_uri: redirectUri,
       grant_type: tokenType,
       username,
       password,
       code,
-      scope: scopes ? scopes.join(&apos; &apos;) : undefined,
-      acr_values: acrs,
+      // scope: scopes ? scopes.join(&apos; &apos;) : undefined,
+      // acr_values: acrs,
       refresh_token: refreshToken,
       code_verifier: session ? session.verifier : undefined,
     });
@@ -282,19 +289,18 @@ class AuthClient {
 
     if (codeResponse.access_token) {
       store.removeItem(codeResponse.session_state);
-      console.log(codeResponse);
-      return codeResponse.access_token;
+      return codeResponse;
+    } else if (codeResponse.code) {
+      const config = await this._getConfiguration(extendedOptions);
+      const response = await this._requestToken({
+        code: codeResponse.code,
+        sessionId: codeResponse.state,
+        ...extendedOptions,
+      }, config);
+
+      return response;
     }
-
-    const config = await this._getConfiguration(extendedOptions);
-    const response = await this._requestToken({
-      code: codeResponse.code,
-      sessionId: codeResponse.session_state,
-      ...extendedOptions,
-    }, config);
-
-    console.log(response);
-    return response;
+    return undefined;
   }
 
   /**

@@ -1,21 +1,33 @@
 window.esdocSearchIndex = [
   [
-    "authclient/src/authclient.js~authclient",
+    "authenticatornator~authclient",
     "class/src/AuthClient.js~AuthClient.html",
-    "<span>AuthClient</span> <span class=\"search-result-import-path\">authclient/src/AuthClient.js</span>",
+    "<span>AuthClient</span> <span class=\"search-result-import-path\">authenticatornator</span>",
     "class"
   ],
   [
-    "authclient/src/crypto.js~crypto",
+    "authenticatornator/lib/crypto.js~crypto",
     "class/src/Crypto.js~Crypto.html",
-    "<span>Crypto</span> <span class=\"search-result-import-path\">authclient/src/Crypto.js</span>",
+    "<span>Crypto</span> <span class=\"search-result-import-path\">authenticatornator/lib/Crypto.js</span>",
     "class"
   ],
   [
-    "authclient/src/store.js~store",
+    "authenticatornator/lib/store.js~store",
     "class/src/Store.js~Store.html",
-    "<span>Store</span> <span class=\"search-result-import-path\">authclient/src/Store.js</span>",
+    "<span>Store</span> <span class=\"search-result-import-path\">authenticatornator/lib/Store.js</span>",
     "class"
+  ],
+  [
+    "",
+    "test-file/src/filler.spec.js.html#lineNumber1",
+    "fill",
+    "test"
+  ],
+  [
+    "",
+    "test-file/src/filler.spec.js.html#lineNumber2",
+    "fill test",
+    "test"
   ],
   [
     "src/.external-ecmascript.js~array",
@@ -418,6 +430,18 @@ window.esdocSearchIndex = [
     "class/src/Store.js~Store.html#instance-method-setItem",
     "src/Store.js~Store#setItem",
     "method"
+  ],
+  [
+    "src/filler.spec.js",
+    "file/src/filler.spec.js.html",
+    "src/filler.spec.js",
+    "file"
+  ],
+  [
+    "src/filler.spec.js",
+    "test-file/src/filler.spec.js.html",
+    "src/filler.spec.js",
+    "testFile"
   ],
   [
     "src/index.js",

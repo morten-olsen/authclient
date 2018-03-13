@@ -1,4 +1,4 @@
-# AuthClient
+# Authenticatornator
 
 [Documentation](https://morten-olsen.github.io/authclient/)
 
@@ -7,7 +7,7 @@
 ### Creating a client
 
 ```javascript
-import AuthClient from 'authclient';
+import AuthClient from 'authenticatornator';
 
 const authClient = new AuthClient({
     baseUrl: 'https://your-server',
