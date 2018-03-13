@@ -1,6 +1,6 @@
 {
   "name": "authenticatornator",
-  "version": "0.0.2",
+  "version": "0.0.0-development",
   "main": "lib/index.js",
   "src": "src/index.js",
   "license": "MIT",
@@ -12,10 +12,11 @@
     "build": "babel src -d lib -s",
     "build:docs": "esdoc",
     "bundle": "webpack",
-    "prepublish": "npm run build",
+    "prepare": "npm run build && npm run bundle",
     "publish:docs": "npm run build:docs && gh-pages -d docs",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
-    "coverage": "npm run test:jest && cat ./coverage/lcov.info | coveralls"
+    "semantic-release": "semantic-release",
+    "coverage": "npm run test:jest && cat ./coverage/lcov.info | coveralls",
+    "travis-deploy-once": "travis-deploy-once"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -43,8 +44,11 @@
     "husky": "^0.14.3",
     "jest": "^22.1.4",
     "parcel-bundler": "^1.6.2",
-    "semantic-release": "^12.4.1",
-    "webpack": "^3.10.0"
+    "semantic-release": "^15.0.3",
+    "semantic-release-cli": "^3.6.4",
+    "uglifyjs-webpack-plugin": "^1.2.3",
+    "webpack": "^3.10.0",
+    "travis-deploy-once": "^4.4.0"
   },
   "jest": {
     "coverageDirectory": "./coverage",
@@ -64,5 +68,12 @@
   },
   "dependencies": {
     "axios": "^0.18.0"
+  },
+  "release": {
+    "branch": "master"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/morten-olsen/authclient.git"
   }
 }

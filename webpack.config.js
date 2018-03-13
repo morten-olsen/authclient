@@ -1,5 +1,5 @@
 const path = require('path');
-const webpack = require('webpack');
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 const packageInfo = require('./package.json');
 
@@ -8,7 +8,7 @@ module.exports = {
   output: {
     path: path.join(__dirname, 'dist'),
     filename: `${packageInfo.name}.min.js`,
-    library: 'Authenticatornator',
+    library: 'AuthClient',
     libraryTarget: 'umd',
   },
   resolve: {
@@ -23,6 +23,6 @@ module.exports = {
   },
   externals: packageInfo.externals || {},
   plugins: [
-    new webpack.optimize.UglifyJsPlugin({ minimize: true, sourceMap: true }),
+    new UglifyJSPlugin({ sourceMap: true }),
   ],
 };

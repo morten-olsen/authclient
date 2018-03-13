@@ -1,3 +1,3 @@
 import AuthClient from 'AuthClient';
 
-export default AuthClient;
+module.exports = AuthClient;
