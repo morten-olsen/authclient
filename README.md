@@ -4,6 +4,7 @@
 [![npm](https://img.shields.io/npm/dm/authenticatornator.svg)](https://www.npmjs.com/package/authenticatornator) 
 [![npm](https://img.shields.io/npm/v/authenticatornator.svg)](https://www.npmjs.com/package/authenticatornator) [![Maintainability](https://api.codeclimate.com/v1/badges/7d192fd20aeadfc34bc7/maintainability)](https://codeclimate.com/github/morten-olsen/authclient/maintainability) [![Known Vulnerabilities](https://snyk.io/test/github/morten-olsen/authclient/badge.svg?targetFile=package.json)](https://snyk.io/test/github/morten-olsen/authclient?targetFile=package.json)
 
+
 [Demo](https://morten-olsen.github.io/authclient/demo)
 [Documentation](https://morten-olsen.github.io/authclient/)
 
