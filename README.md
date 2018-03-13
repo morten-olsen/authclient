@@ -53,7 +53,7 @@ If jusing password grant, you can simply use `const token = await authClient.get
         const button = document.querySelector('button');
         const view = document.querySelector('div');
         button.onClick = async () => {
-          const url = await authClient.getLoginUrl();
+          window.location.href = await authClient.getLoginUrl();
         }
         if (location.hash) {
           const token = await authClient.exchangeToken(window.location.href);
