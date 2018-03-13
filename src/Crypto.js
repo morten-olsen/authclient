@@ -1,6 +1,6 @@
 const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const HAS_CRYPTO = typeof window !== 'undefined' && !!global.crypto;
-const encoder = new global.TextEncoder('utf-8');
+const encoder = global.TextEncoder ? new global.TextEncoder('utf-8') : undefined;
 
 /** @ignore */
 const arrayBufferToBase64 = (buffer) => {
