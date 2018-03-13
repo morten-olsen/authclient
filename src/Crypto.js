@@ -2,6 +2,7 @@ const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 const HAS_CRYPTO = typeof window !== 'undefined' && !!global.crypto;
 const encoder = new global.TextEncoder('utf-8');
 
+/** @ignore */
 const arrayBufferToBase64 = (buffer) => {
   let binary = '';
   const bytes = new global.Uint8Array(buffer);
@@ -12,6 +13,7 @@ const arrayBufferToBase64 = (buffer) => {
   return global.btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 };
 
+/** @ignore */
 export const bufferToString = (buffer) => {
   const state = [];
   for (let i = 0; i < buffer.byteLength; i += 1) {

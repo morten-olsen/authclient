@@ -1,4 +1,4 @@
-class Storage {
+class Store {
   constructor(prefix) {
     this._prefix = prefix;
   }
@@ -23,4 +23,4 @@ class Storage {
   }
 }
 
-export default Storage;
+export default Store;

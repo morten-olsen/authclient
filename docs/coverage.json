@@ -1,0 +1,48 @@
+{
+  "coverage": "47.05%",
+  "expectCount": 34,
+  "actualCount": 16,
+  "files": {
+    "src/AuthClient.js": {
+      "expectCount": 16,
+      "actualCount": 13,
+      "undocumentLines": [
+        1,
+        3,
+        9
+      ]
+    },
+    "src/Crypto.js": {
+      "expectCount": 10,
+      "actualCount": 2,
+      "undocumentLines": [
+        1,
+        3,
+        4,
+        5,
+        28,
+        29,
+        37,
+        41
+      ]
+    },
+    "src/Store.js": {
+      "expectCount": 7,
+      "actualCount": 0,
+      "undocumentLines": [
+        1,
+        3,
+        4,
+        5,
+        8,
+        21,
+        30
+      ]
+    },
+    "src/utils.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    }
+  }
+}

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl">
+  <title data-ice="title">Home | authclient</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/AuthClient.js~AuthClient.html">AuthClient</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Crypto.js~Crypto.html">Crypto</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Store.js~Store.html">Store</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Options">Options</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ResponseTypes">ResponseTypes</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TokenResponse">TokenResponse</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TokenTypes">TokenTypes</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="authclient">AuthClient</h1><h2 id="usage">Usage</h2><h3 id="creating-a-client">Creating a client</h3><pre><code class="lang-javascript"><code class="source-code prettyprint">import AuthClient from &apos;authclient&apos;;
+
+const authClient = new AuthClient({
+    baseUrl: &apos;https://your-server&apos;,
+    clientId: &apos;ClientId&apos;,
+    redirectUri: `${global.location.protocol}//${global.location.host}`,
+    responseTypes: [&apos;id_token&apos;, &apos;token&apos;],
+    scopes: [
+      &apos;openid&apos;,
+      &apos;profile&apos;,
+    ],
+  });</code>
+</code></pre>
+<h3 id="creating-a-login-url">Creating a login url</h3><p>A login url is obtained by calling <code>const url = await authClient.getLoginUrl();</code>. This url should then be presented to the user <code>window.location.href = url;</code>, or what is best suited for the platform that you are working on</p>
+<h3 id="getting-the-token">Getting the token</h3><p>Once the user has logged into the login page, they should be redirected to the <code>redirect_uri</code> with some additional information which can then be used to get the token. To exchange these informations, simply call <code>const token = await authClient.exchangeToken(window.location.href);</code></p>
+<p>If jusing password grant, you can simply use <code>const token = await authClient.getToken({ username: &apos;admin&apos;, password: &apos;god&apos;});</code> or to renew a token using a refresh token <code>const token = await authClient.getToken({refreshToken: &apos;...&apos;});</code></p>
+<h2 id="minimal-example">Minimal example</h2><pre><code class="lang-html"><code class="source-code prettyprint">&lt;html&gt;
+  &lt;body&gt;
+    &lt;div&gt;&lt;/div&gt;
+    &lt;button&gt;Login&lt;/button&gt;
+    &lt;script&gt;
+      const boot = async () =&gt; {
+        const authClient = new AuthClient({
+          baseUrl: &apos;https://your-server&apos;,
+          clientId: &apos;ClientId&apos;,
+          redirectUri: `${global.location.protocol}//${global.location.host}`,
+          responseTypes: [&apos;id_token&apos;, &apos;token&apos;],
+          scopes: [
+            &apos;openid&apos;,
+            &apos;profile&apos;,
+          ],
+        });
+        const button = document.querySelector(&apos;button&apos;);
+        const view = document.querySelector(&apos;div&apos;);
+        button.onClick = async () =&gt; {
+          const url = await authClient.getLoginUrl();
+        }
+        if (location.hash) {
+          const token = await authClient.exchangeToken(window.location.href);
+          view.innerHTML = JSON.stringify(token, null, &apos;  &apos;);
+        }
+      };
+      boot();
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code>
+</code></pre>
+</div>
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(1.0.4)</span><img src="./image/esdoc-logo-mini-black.png"></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
