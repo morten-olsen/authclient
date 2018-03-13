@@ -7,14 +7,17 @@ notifications:
 node_js:
 - '9'
 install:
-- npm install
+- yarn global add greenkeeper-lockfile@1
+- yarn install
+before_script: greenkeeper-lockfile-update
 script:
-- npm test
-- npm run build
-- npm run bundle
+- yarn test
+- yarn run build
+- yarn run bundle
+after_script: greenkeeper-lockfile-upload
 after_success:
-- npm run coverage
-- npm run semantic-release
+- yarn run coverage
+- yarn run semantic-release
 before_deploy:
 - git checkout package.json
 branches:
