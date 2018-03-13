@@ -110,19 +110,21 @@ class AuthClient {
       scopes = [],
       responseTypes = ['code'],
       extra = {},
+      pkce: pkceEnabled,
     } = options;
 
     const state = crypto.random();
     let pkce;
-    if (crypto) {
+    if (crypto && pkceEnabled) {
       pkce = await this._createVerifier(options);
     }
 
     const params = {
       client_id,
       redirect_uri,
-      scope: scopes.join(' '),
+      scope: scopes ? scopes.join(' ') : undefined,
       code_challenge: pkce ? pkce.challenge : undefined,
+      code_challenge_method: pkce ? 'S256' : undefined,
       response_type: responseTypes.join(' '),
       state,
       nonce: responseTypes.includes('id_token') ? crypto.random() : undefined,
@@ -135,13 +137,16 @@ class AuthClient {
       ...pkce,
     });
 
-    const parts = Object.keys(params).map(key => `${key}=${encodeURIComponent(params[key])}`);
+    const parts = Object.keys(params).filter(key => params[key]).map(key => `${key}=${encodeURIComponent(params[key])}`);
     return `${authorizationEndpoint}?${parts.join('&')}`;
   }
 
   /** @ignore */
   _parseUrl(url) {
-    const [, query] = url.split('#');
+    const [, query] = url.split(url.indexOf('#') >= 0 ? '#' : '?');
+    if (!query) {
+      return {};
+    }
     return query.split('&').reduce((output, current) => {
       const [name, value] = current.split('=');
       return {
@@ -161,22 +166,24 @@ class AuthClient {
       code,
       sessionId,
       clientSecret,
+      redirectUri,
       username,
       password,
-      acrs,
-      scopes,
+      // acrs,
+      // scopes,
     } = options;
 
-    const session = store.getItem(sessionId);
+    const session = await store.getItem(sessionId);
     const response = await axios.post(config.token_endpoint, {
       client_id: clientId,
       client_secret: clientSecret,
+      redirect_uri: redirectUri,
       grant_type: tokenType,
       username,
       password,
       code,
-      scope: scopes ? scopes.join(' ') : undefined,
-      acr_values: acrs,
+      // scope: scopes ? scopes.join(' ') : undefined,
+      // acr_values: acrs,
       refresh_token: refreshToken,
       code_verifier: session ? session.verifier : undefined,
     });
@@ -239,19 +246,18 @@ class AuthClient {
 
     if (codeResponse.access_token) {
       store.removeItem(codeResponse.session_state);
-      console.log(codeResponse);
-      return codeResponse.access_token;
+      return codeResponse;
+    } else if (codeResponse.code) {
+      const config = await this._getConfiguration(extendedOptions);
+      const response = await this._requestToken({
+        code: codeResponse.code,
+        sessionId: codeResponse.state,
+        ...extendedOptions,
+      }, config);
+
+      return response;
     }
-
-    const config = await this._getConfiguration(extendedOptions);
-    const response = await this._requestToken({
-      code: codeResponse.code,
-      sessionId: codeResponse.session_state,
-      ...extendedOptions,
-    }, config);
-
-    console.log(response);
-    return response;
+    return undefined;
   }
 
   /**

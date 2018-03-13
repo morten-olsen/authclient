@@ -20,7 +20,7 @@ export const bufferToString = (buffer) => {
     const index = (buffer[i] % CHARSET.length) | 0; // eslint-disable-line no-bitwise
     state.push(CHARSET[index]);
   }
-  return state.join('');
+  return state.join('').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 };
 
 class Crypto {
@@ -34,7 +34,7 @@ class Crypto {
     return arrayBufferToBase64(value);
   }
 
-  random(sizeInBytes = 24) {
+  random(sizeInBytes = 32) {
     const buffer = new Uint8Array(sizeInBytes);
     if (HAS_CRYPTO) {
       global.crypto.getRandomValues(buffer);

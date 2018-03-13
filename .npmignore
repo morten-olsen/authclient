@@ -11,3 +11,4 @@
 .env
 /.nyc_output
 /.coverage
+/demo/config.js
