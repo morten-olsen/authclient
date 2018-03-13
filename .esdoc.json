@@ -35,5 +35,19 @@
         { "from": "^src/", "to": "authenticatornator/lib/" }
       ]
     }
+  }, {
+    "name": "esdoc-brand-plugin",
+    "option": {
+      "title": "Authenticatornator",
+      "description": "this is awesome library",
+      "repository": "https://github.com/morten-olsen/authclient",
+      "site": "https://morten-olsen.github.io/authclient/",
+      "author": "https://github.com/morten-olsen"
+    }
+  }, {
+    "name": "esdoc-publish-html-plugin",
+    "option": {
+      "template": "./node_modules/esdoc-custom-theme/template"
+    }
   }]
 }

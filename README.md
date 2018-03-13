@@ -1,5 +1,6 @@
 # Authenticatornator
 
+[Demo](https://morten-olsen.github.io/authclient/demo)
 [Documentation](https://morten-olsen.github.io/authclient/)
 
 ## Usage
