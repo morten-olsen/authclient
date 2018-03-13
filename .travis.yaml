@@ -1,0 +1,24 @@
+language: node_js
+addons:
+  chrome: stable
+cache:
+  directories:
+  - "~/.npm"
+notifications:
+  email: false
+node_js:
+- '8'
+install:
+- npm install
+script:
+- npm test
+- npm run build
+- npm run bundle
+after_success:
+- npm run coverage
+- npm run semantic-release
+before_deploy:
+- git checkout package.json
+branches:
+  except:
+  - "/^v\\d+\\.\\d+\\.\\d+$/"

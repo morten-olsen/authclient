@@ -1,0 +1,13 @@
+/.vscode
+/node_modules
+/src
+/.babelrc
+/.eslintignore
+/.eslintrc
+/.gitignore
+/.travis.yml
+/wallaby.js
+/yarn.lock
+.env
+/.nyc_output
+/.coverage
