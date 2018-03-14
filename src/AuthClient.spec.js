@@ -2,8 +2,8 @@ import url from 'url';
 import axios from 'axios';
 import querystring from 'querystring';
 import AuthClient from './AuthClient';
-import Crypto from './Crypto.node';
-import Store from './Store.node';
+import Crypto from './CryptoHelper';
+import Store from './Store';
 import config from '../demo/config';
 
 jest.mock('axios');

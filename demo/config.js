@@ -1,14 +1,14 @@
 export default {
   base: {
     baseUrl: 'https://authclient-demo.eu.auth0.com',
-    clientId: 'KhPH59sdDkNo1u9a70i17aA3ZRGuk1C5',
-    clientSecret: 'uTpE4Zwi1dReiO3O5pfjmDh2vCHqOyT3qlXq6NweB9_AFU76sXrqj3nC1cGHRjpy',
+    clientId: 'tseHxrplUHTS7kBzYjpZSACd8rnXbYW4',
+    clientSecret: 'HkHH1COc222rHtwKa3ufduf03rCHS-fzc9b8Xij4l6MHQSzwqMe5Ijg6OW1jL9zg',
     redirectUri: `${global.location.protocol}//${global.location.host}${global.location.pathname}`,
   },
   authCode: {
     baseUrl: 'https://authclient-demo.eu.auth0.com',
-    clientId: 'KhPH59sdDkNo1u9a70i17aA3ZRGuk1C5',
-    clientSecret: 'uTpE4Zwi1dReiO3O5pfjmDh2vCHqOyT3qlXq6NweB9_AFU76sXrqj3nC1cGHRjpy',
+    clientId: 'tseHxrplUHTS7kBzYjpZSACd8rnXbYW4',
+    clientSecret: 'HkHH1COc222rHtwKa3ufduf03rCHS-fzc9b8Xij4l6MHQSzwqMe5Ijg6OW1jL9zg',
     redirectUri: `${global.location.protocol}//${global.location.host}${global.location.pathname}`,
     responseTypes: ['code'],
     pkce: true,
@@ -19,10 +19,20 @@ export default {
   },
   implicit: {
     baseUrl: 'https://authclient-demo.eu.auth0.com',
-    clientId: 'cn4GgGv0Sw7flUZF2tKO1DXiw402AoGa',
+    clientId: 'tseHxrplUHTS7kBzYjpZSACd8rnXbYW4',
     redirectUri: `${global.location.protocol}//${global.location.host}${global.location.pathname}`,
     responseTypes: ['id_token', 'token'],
     pkce: true,
+    scopes: [
+      'openid',
+      'profile',
+    ],
+  },
+  password: {
+    baseUrl: 'https://authclient-demo.eu.auth0.com',
+    clientId: 'tseHxrplUHTS7kBzYjpZSACd8rnXbYW4',
+    clientSecret: 'HkHH1COc222rHtwKa3ufduf03rCHS-fzc9b8Xij4l6MHQSzwqMe5Ijg6OW1jL9zg',
+    redirectUri: `${global.location.protocol}//${global.location.host}${global.location.pathname}`,
     scopes: [
       'openid',
       'profile',

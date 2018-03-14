@@ -30,25 +30,26 @@
   <ul>
     
   <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/AuthClient.js~AuthClient.html">AuthClient</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Crypto.js~Crypto.html">Crypto</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Store.js~Store.html">Store</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Crypto.js~NodeCrypto.html">NodeCrypto</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Crypto.web.js~Crypto.html">Crypto</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Store.js~NodeStore.html">NodeStore</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Store.web.js~Store.html">Store</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-config">config</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Options">Options</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ResponseTypes">ResponseTypes</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TokenResponse">TokenResponse</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TokenTypes">TokenTypes</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#--mocks--">__mocks__</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-axios">axios</a></span></span></li>
 </ul>
 </div>
 </nav>
 
 <div class="content" data-ice="content"><h1 data-ice="title">src/AuthClient.js</h1>
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import axios from &apos;axios&apos;;
-import Crypto from &apos;./Crypto&apos;;
-import Store from &apos;./Store&apos;;
+import configManager from &apos;config&apos;;
 
 const defaultOptions = {
-  store: new Store(&apos;auth_&apos;),
   tokenType: &apos;authorization_code&apos;,
-  crypto: new Crypto(),
 };
 
 /**
@@ -111,6 +112,12 @@ class AuthClient {
     /** @ignore */
     this._options = {
       ...defaultOptions,
+      store: configManager.get(&apos;createStore&apos;)
+        ? configManager.get(&apos;createStore&apos;)()
+        : undefined,
+      crypto: configManager.get(&apos;createCrypto&apos;)
+        ? configManager.get(&apos;createCrypto&apos;)()
+        : undefined,
       ...options,
     };
   }
@@ -124,12 +131,12 @@ class AuthClient {
   }
 
   /** @ignore */
-  async _getKeys(options) {
+  /* async _getKeys(options) {
     const { baseUrl } = options;
     const url = `${baseUrl}/.well-known/openid-configuration/jwks`;
     const response = await axios.get(url);
     return response.data;
-  }
+  } */
 
   /** @ignore */
   async _createVerifier(options) {
@@ -148,19 +155,13 @@ class AuthClient {
     const { store, crypto } = this._options;
     /* eslint-disable camelcase */
     const {
-      clientId: client_id,
-      redirectUri: redirect_uri,
-      scopes = [],
-      responseTypes = [&apos;code&apos;],
-      extra = {},
+      clientId: client_id, redirectUri: redirect_uri,
+      scopes = [], responseTypes = [&apos;code&apos;], extra = {},
       pkce: pkceEnabled,
     } = options;
 
-    const state = crypto.random();
-    let pkce;
-    if (crypto &amp;&amp; pkceEnabled) {
-      pkce = await this._createVerifier(options);
-    }
+    const state = crypto ? crypto.random() : undefined;
+    const pkce = crypto &amp;&amp; pkceEnabled ? await this._createVerifier(options) : undefined;
 
     const params = {
       client_id,
@@ -170,16 +171,13 @@ class AuthClient {
       code_challenge_method: pkce ? &apos;S256&apos; : undefined,
       response_type: responseTypes.join(&apos; &apos;),
       state,
-      nonce: responseTypes.includes(&apos;id_token&apos;) ? crypto.random() : undefined,
+      nonce: responseTypes.includes(&apos;id_token&apos;) &amp;&amp; crypto ? crypto.random() : undefined,
       ...extra,
     };
     /* eslint-enable camelcase */
-
-    await store.setItem(state, {
-      ...params,
-      ...pkce,
-    });
-
+    if (store) {
+      await store.setItem(state, { ...params, ...pkce });
+    }
     const parts = Object.keys(params).filter(key =&gt; params[key]).map(key =&gt; `${key}=${encodeURIComponent(params[key])}`);
     return `${authorizationEndpoint}?${parts.join(&apos;&amp;&apos;)}`;
   }
@@ -202,31 +200,21 @@ class AuthClient {
   /** @ignore */
   async _requestToken(options, config) {
     const {
-      clientId,
-      tokenType,
-      refreshToken,
-      store,
-      code,
-      sessionId,
-      clientSecret,
-      redirectUri,
-      username,
-      password,
-      // acrs,
-      // scopes,
+      clientId, tokenType, refreshToken,
+      store, code, sessionId, clientSecret,
+      redirectUri, username, password, scopes,
     } = options;
 
-    const session = await store.getItem(sessionId);
+    const session = store ? await store.getItem(sessionId) : undefined;
     const response = await axios.post(config.token_endpoint, {
       client_id: clientId,
       client_secret: clientSecret,
       redirect_uri: redirectUri,
-      grant_type: tokenType,
+      grant_type: password ? &apos;password&apos; : tokenType,
       username,
       password,
       code,
-      // scope: scopes ? scopes.join(&apos; &apos;) : undefined,
-      // acr_values: acrs,
+      scope: scopes ? scopes.join(&apos; &apos;) : undefined,
       refresh_token: refreshToken,
       code_verifier: session ? session.verifier : undefined,
     });
@@ -288,7 +276,9 @@ class AuthClient {
     const codeResponse = await this._parseUrl(url);
 
     if (codeResponse.access_token) {
-      store.removeItem(codeResponse.session_state);
+      if (store) {
+        store.removeItem(codeResponse.session_state);
+      }
       return codeResponse;
     } else if (codeResponse.code) {
       const config = await this._getConfiguration(extendedOptions);
@@ -318,12 +308,11 @@ class AuthClient {
   async getToken(options) {
     const extendedOptions = {
       ...this._options,
-      options,
+      scopes: undefined,
+      ...options,
     };
     const config = await this._getConfiguration(extendedOptions);
     const response = await this._requestToken(extendedOptions, config);
-
-    console.log(response);
     return response;
   }
 }
