@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <base data-ice="baseUrl" href="../../">
-  <title data-ice="title">src/Store.js | Authenticatornator</title>
+  <title data-ice="title">src/Crypto.web.js | Authenticatornator</title>
   <link type="text/css" rel="stylesheet" href="css/style.css">
   <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
   <script src="script/prettify/prettify.js"></script>
@@ -44,26 +44,58 @@
 </div>
 </nav>
 
-<div class="content" data-ice="content"><h1 data-ice="title">src/Store.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">class NodeStore {
-  constructor() {
-    this._data = {};
+<div class="content" data-ice="content"><h1 data-ice="title">src/Crypto.web.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const CHARSET = &apos;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&apos;;
+const HAS_CRYPTO = typeof window !== &apos;undefined&apos; &amp;&amp; !!global.crypto;
+const encoder = global.TextEncoder ? new global.TextEncoder(&apos;utf-8&apos;) : undefined;
+
+/** @ignore */
+const arrayBufferToBase64 = (buffer) =&gt; {
+  let binary = &apos;&apos;;
+  const bytes = new global.Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i &lt; len; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return global.btoa(binary).replace(/\+/g, &apos;-&apos;).replace(/\//g, &apos;_&apos;).replace(/=/g, &apos;&apos;);
+};
+
+/** @ignore */
+export const bufferToString = (buffer) =&gt; {
+  const state = [];
+  for (let i = 0; i &lt; buffer.byteLength; i += 1) {
+    const index = (buffer[i] % CHARSET.length) | 0; // eslint-disable-line no-bitwise
+    state.push(CHARSET[index]);
+  }
+  return state.join(&apos;&apos;).replace(/\+/g, &apos;-&apos;).replace(/\//g, &apos;_&apos;).replace(/=/g, &apos;&apos;);
+};
+
+class Crypto {
+  async sha256(value) {
+    const encoded = encoder.encode(value);
+    const hashed = await global.crypto.subtle.digest(&apos;SHA-256&apos;, encoded);
+    return hashed;
   }
 
-  async getItem(name) {
-    return this._data[name];
+  bytesToBase64(value) {
+    return arrayBufferToBase64(value);
   }
 
-  async setItem(name, value) {
-    this._data[name] = value;
-  }
-
-  async removeItem(name) {
-    delete this._data[name];
+  random(sizeInBytes = 32) {
+    const buffer = new Uint8Array(sizeInBytes);
+    if (HAS_CRYPTO) {
+      global.crypto.getRandomValues(buffer);
+    } else {
+      // fall back to Math.random() if nothing else is available
+      for (let i = 0; i &lt; sizeInBytes; i += 1) {
+        buffer[i] = Math.random();
+      }
+    }
+    return bufferToString(buffer);
   }
 }
 
-export default NodeStore;
+export default Crypto;
 </code></pre>
 
 </div>

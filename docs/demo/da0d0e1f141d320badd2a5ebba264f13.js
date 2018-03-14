@@ -71,7 +71,7 @@ require = (function (modules, cache, entry) {
 
   // Override the current require with this new one
   return newRequire;
-})({14:[function(require,module,exports) {
+})({15:[function(require,module,exports) {
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -84,7 +84,7 @@ module.exports = function bind(fn, thisArg) {
   };
 };
 
-},{}],36:[function(require,module,exports) {
+},{}],37:[function(require,module,exports) {
 /*!
  * Determine if an object is a Buffer
  *
@@ -107,7 +107,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],12:[function(require,module,exports) {
+},{}],13:[function(require,module,exports) {
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -412,7 +412,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":14,"is-buffer":36}],22:[function(require,module,exports) {
+},{"./helpers/bind":15,"is-buffer":37}],23:[function(require,module,exports) {
 'use strict';
 
 var utils = require('../utils');
@@ -426,7 +426,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
   });
 };
 
-},{"../utils":12}],35:[function(require,module,exports) {
+},{"../utils":13}],36:[function(require,module,exports) {
 'use strict';
 
 /**
@@ -449,7 +449,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
   return error;
 };
 
-},{}],27:[function(require,module,exports) {
+},{}],30:[function(require,module,exports) {
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -469,7 +469,7 @@ module.exports = function createError(message, config, code, request, response) 
   return enhanceError(error, config, code, request, response);
 };
 
-},{"./enhanceError":35}],26:[function(require,module,exports) {
+},{"./enhanceError":36}],26:[function(require,module,exports) {
 'use strict';
 
 var createError = require('./createError');
@@ -497,7 +497,7 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":27}],30:[function(require,module,exports) {
+},{"./createError":30}],28:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -565,7 +565,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
   return url;
 };
 
-},{"./../utils":12}],31:[function(require,module,exports) {
+},{"./../utils":13}],27:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -620,7 +620,7 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":12}],25:[function(require,module,exports) {
+},{"./../utils":13}],29:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -690,7 +690,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":12}],28:[function(require,module,exports) {
+},{"./../utils":13}],31:[function(require,module,exports) {
 'use strict';
 
 // btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
@@ -728,7 +728,7 @@ function btoa(input) {
 
 module.exports = btoa;
 
-},{}],29:[function(require,module,exports) {
+},{}],32:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -783,7 +783,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":12}],21:[function(require,module,exports) {
+},{"./../utils":13}],22:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -958,7 +958,7 @@ module.exports = function xhrAdapter(config) {
     request.send(requestData);
   });
 };
-},{"./../utils":12,"./../core/settle":26,"./../helpers/buildURL":30,"./../helpers/parseHeaders":31,"./../helpers/isURLSameOrigin":25,"../core/createError":27,"./../helpers/btoa":28,"./../helpers/cookies":29}],20:[function(require,module,exports) {
+},{"./../utils":13,"./../core/settle":26,"./../helpers/buildURL":28,"./../helpers/parseHeaders":27,"./../helpers/isURLSameOrigin":29,"../core/createError":30,"./../helpers/btoa":31,"./../helpers/cookies":32}],21:[function(require,module,exports) {
 
 // shim for using process in browser
 var process = module.exports = {};
@@ -1145,7 +1145,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],13:[function(require,module,exports) {
+},{}],14:[function(require,module,exports) {
 var process = require("process");
 'use strict';
 
@@ -1244,7 +1244,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = defaults;
 
-},{"./utils":12,"./helpers/normalizeHeaderName":22,"./adapters/xhr":21,"./adapters/http":21,"process":20}],23:[function(require,module,exports) {
+},{"./utils":13,"./helpers/normalizeHeaderName":23,"./adapters/xhr":22,"./adapters/http":22,"process":21}],24:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -1298,7 +1298,7 @@ InterceptorManager.prototype.forEach = function forEach(fn) {
 
 module.exports = InterceptorManager;
 
-},{"./../utils":12}],32:[function(require,module,exports) {
+},{"./../utils":13}],33:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -1320,14 +1320,14 @@ module.exports = function transformData(data, headers, fns) {
   return data;
 };
 
-},{"./../utils":12}],18:[function(require,module,exports) {
+},{"./../utils":13}],18:[function(require,module,exports) {
 'use strict';
 
 module.exports = function isCancel(value) {
   return !!(value && value.__CANCEL__);
 };
 
-},{}],33:[function(require,module,exports) {
+},{}],34:[function(require,module,exports) {
 'use strict';
 
 /**
@@ -1343,7 +1343,7 @@ module.exports = function isAbsoluteURL(url) {
   return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 };
 
-},{}],34:[function(require,module,exports) {
+},{}],35:[function(require,module,exports) {
 'use strict';
 
 /**
@@ -1359,7 +1359,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
     : baseURL;
 };
 
-},{}],24:[function(require,module,exports) {
+},{}],25:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -1447,7 +1447,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"./../utils":12,"./transformData":32,"../cancel/isCancel":18,"../defaults":13,"./../helpers/isAbsoluteURL":33,"./../helpers/combineURLs":34}],15:[function(require,module,exports) {
+},{"./../utils":13,"./transformData":33,"../cancel/isCancel":18,"../defaults":14,"./../helpers/isAbsoluteURL":34,"./../helpers/combineURLs":35}],16:[function(require,module,exports) {
 'use strict';
 
 var defaults = require('./../defaults');
@@ -1528,7 +1528,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":13,"./../utils":12,"./InterceptorManager":23,"./dispatchRequest":24}],16:[function(require,module,exports) {
+},{"./../defaults":14,"./../utils":13,"./InterceptorManager":24,"./dispatchRequest":25}],19:[function(require,module,exports) {
 'use strict';
 
 /**
@@ -1608,7 +1608,7 @@ CancelToken.source = function source() {
 
 module.exports = CancelToken;
 
-},{"./Cancel":16}],19:[function(require,module,exports) {
+},{"./Cancel":19}],20:[function(require,module,exports) {
 'use strict';
 
 /**
@@ -1637,7 +1637,7 @@ module.exports = function spread(callback) {
   };
 };
 
-},{}],11:[function(require,module,exports) {
+},{}],12:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./utils');
@@ -1691,125 +1691,30 @@ module.exports = axios;
 // Allow use of default import syntax in TypeScript
 module.exports.default = axios;
 
-},{"./utils":12,"./helpers/bind":14,"./core/Axios":15,"./defaults":13,"./cancel/Cancel":16,"./cancel/CancelToken":17,"./cancel/isCancel":18,"./helpers/spread":19}],10:[function(require,module,exports) {
+},{"./utils":13,"./helpers/bind":15,"./core/Axios":16,"./defaults":14,"./cancel/Cancel":19,"./cancel/CancelToken":17,"./cancel/isCancel":18,"./helpers/spread":20}],11:[function(require,module,exports) {
 module.exports = require('./lib/axios');
-},{"./lib/axios":11}],8:[function(require,module,exports) {
-var global = (1,eval)("this");
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-const HAS_CRYPTO = typeof window !== 'undefined' && !!global.crypto;
-const encoder = new global.TextEncoder('utf-8');
-
-/** @ignore */
-const arrayBufferToBase64 = buffer => {
-  let binary = '';
-  const bytes = new global.Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i += 1) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return global.btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-};
-
-/** @ignore */
-const bufferToString = exports.bufferToString = buffer => {
-  const state = [];
-  for (let i = 0; i < buffer.byteLength; i += 1) {
-    const index = buffer[i] % CHARSET.length | 0; // eslint-disable-line no-bitwise
-    state.push(CHARSET[index]);
-  }
-  return state.join('').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-};
-
-class Crypto {
-  sha256(value) {
-    return _asyncToGenerator(function* () {
-      const encoded = encoder.encode(value);
-      const hashed = yield global.crypto.subtle.digest('SHA-256', encoded);
-      return hashed;
-    })();
-  }
-
-  bytesToBase64(value) {
-    return arrayBufferToBase64(value);
-  }
-
-  random(sizeInBytes = 32) {
-    const buffer = new Uint8Array(sizeInBytes);
-    if (HAS_CRYPTO) {
-      global.crypto.getRandomValues(buffer);
-    } else {
-      // fall back to Math.random() if nothing else is available
-      for (let i = 0; i < sizeInBytes; i += 1) {
-        buffer[i] = Math.random();
-      }
-    }
-    return bufferToString(buffer);
-  }
-}
-
-exports.default = Crypto;
-},{}],9:[function(require,module,exports) {
-var global = (1,eval)("this");
+},{"./lib/axios":12}],7:[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-const Store = function () {
-  const [$_prefix$] = [Symbol("$_prefix$")];
-  class Store {
-    constructor(prefix) {
-      this[$_prefix$] = prefix;
-    }
-
-    getItem(name) {
-      var _this = this;
-
-      return _asyncToGenerator(function* () {
-        const key = `${_this[$_prefix$]}${name}`;
-        const raw = global.localStorage.getItem(key);
-        if (raw) {
-          return JSON.parse(raw);
-        }
-        return undefined;
-      })();
-    }
-
-    setItem(name, value) {
-      var _this2 = this;
-
-      return _asyncToGenerator(function* () {
-        const key = `${_this2[$_prefix$]}${name}`;
-        global.localStorage.setItem(key, JSON.stringify(value));
-      })();
-    }
-
-    removeItem(name) {
-      var _this3 = this;
-
-      return _asyncToGenerator(function* () {
-        const key = `${_this3[$_prefix$]}${name}`;
-        global.localStorage.removeItem(key);
-      })();
-    }
+class Config {
+  constructor() {
+    this.values = {};
   }
 
-  return Store;
-}();
+  set(name, value) {
+    this.values[name] = value;
+  }
 
-exports.default = Store;
-},{}],7:[function(require,module,exports) {
+  get(name) {
+    return this.values[name];
+  }
+}
+
+exports.default = new Config();
+},{}],6:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1822,22 +1727,16 @@ var _axios = require('axios');
 
 var _axios2 = _interopRequireDefault(_axios);
 
-var _Crypto = require('./Crypto');
+var _config = require('./config');
 
-var _Crypto2 = _interopRequireDefault(_Crypto);
-
-var _Store = require('./Store');
-
-var _Store2 = _interopRequireDefault(_Store);
+var _config2 = _interopRequireDefault(_config);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 const defaultOptions = {
-  store: new _Store2.default('auth_'),
-  tokenType: 'authorization_code',
-  crypto: new _Crypto2.default()
+  tokenType: 'authorization_code'
 };
 
 /**
@@ -1891,274 +1790,375 @@ const defaultOptions = {
  * const url = await authClient.getLoginUrl();
  * window.location.href = url;
  */
-
-const AuthClient = function () {
-  const [$_options$, $_getConfiguration$, $_getKeys$, $_createVerifier$, $_createRequestUrl$, $_parseUrl$, $_requestToken$] = [Symbol('$_options$'), Symbol('$_getConfiguration$'), Symbol('$_getKeys$'), Symbol('$_createVerifier$'), Symbol('$_createRequestUrl$'), Symbol('$_parseUrl$'), Symbol('$_requestToken$')];
-  class AuthClient {
-    /**
-     *
-     * @param {Options} options
-     */
-    constructor(options) {
-      /** @ignore */
-      this[$_options$] = _extends({}, defaultOptions, options);
-    }
-
+class AuthClient {
+  /**
+   *
+   * @param {Options} options
+   */
+  constructor(options) {
     /** @ignore */
-    [$_getConfiguration$](options) {
-      return _asyncToGenerator(function* () {
-        const { baseUrl } = options;
-        const url = `${baseUrl}/.well-known/openid-configuration`;
-        const response = yield _axios2.default.get(url);
-        return response.data;
-      })();
-    }
-
-    /** @ignore */
-    [$_getKeys$](options) {
-      return _asyncToGenerator(function* () {
-        const { baseUrl } = options;
-        const url = `${baseUrl}/.well-known/openid-configuration/jwks`;
-        const response = yield _axios2.default.get(url);
-        return response.data;
-      })();
-    }
-
-    /** @ignore */
-    [$_createVerifier$](options) {
-      return _asyncToGenerator(function* () {
-        const { crypto } = options;
-        const verifier = crypto.random();
-        const challengeBytes = yield crypto.sha256(verifier);
-        const challenge = yield crypto.bytesToBase64(challengeBytes);
-        return {
-          verifier,
-          challenge
-        };
-      })();
-    }
-
-    /** @ignore */
-    [$_createRequestUrl$](options, { authorization_endpoint: authorizationEndpoint }) {
-      var _this = this;
-
-      return _asyncToGenerator(function* () {
-        const { store, crypto } = _this[$_options$];
-        /* eslint-disable camelcase */
-        const {
-          clientId: client_id,
-          redirectUri: redirect_uri,
-          scopes = [],
-          responseTypes = ['code'],
-          extra = {},
-          pkce: pkceEnabled
-        } = options;
-
-        const state = crypto.random();
-        let pkce;
-        if (crypto && pkceEnabled) {
-          pkce = yield _this[$_createVerifier$](options);
-        }
-
-        const params = _extends({
-          client_id,
-          redirect_uri,
-          scope: scopes ? scopes.join(' ') : undefined,
-          code_challenge: pkce ? pkce.challenge : undefined,
-          code_challenge_method: pkce ? 'S256' : undefined,
-          response_type: responseTypes.join(' '),
-          state,
-          nonce: responseTypes.includes('id_token') ? crypto.random() : undefined
-        }, extra);
-        /* eslint-enable camelcase */
-
-        yield store.setItem(state, _extends({}, params, pkce));
-
-        const parts = Object.keys(params).filter(function (key) {
-          return params[key];
-        }).map(function (key) {
-          return `${key}=${encodeURIComponent(params[key])}`;
-        });
-        return `${authorizationEndpoint}?${parts.join('&')}`;
-      })();
-    }
-
-    /** @ignore */
-    [$_parseUrl$](url) {
-      const [, query] = url.split(url.indexOf('#') >= 0 ? '#' : '?');
-      if (!query) {
-        return {};
-      }
-      return query.split('&').reduce((output, current) => {
-        const [name, value] = current.split('=');
-        return _extends({}, output, {
-          [name]: decodeURIComponent(value)
-        });
-      }, {});
-    }
-
-    /** @ignore */
-    [$_requestToken$](options, config) {
-      return _asyncToGenerator(function* () {
-        const {
-          clientId,
-          tokenType,
-          refreshToken,
-          store,
-          code,
-          sessionId,
-          clientSecret,
-          redirectUri,
-          username,
-          password
-          // acrs,
-          // scopes,
-        } = options;
-
-        const session = yield store.getItem(sessionId);
-        const response = yield _axios2.default.post(config.token_endpoint, {
-          client_id: clientId,
-          client_secret: clientSecret,
-          redirect_uri: redirectUri,
-          grant_type: tokenType,
-          username,
-          password,
-          code,
-          // scope: scopes ? scopes.join(' ') : undefined,
-          // acr_values: acrs,
-          refresh_token: refreshToken,
-          code_verifier: session ? session.verifier : undefined
-        });
-        if (sessionId) {
-          store.removeItem(sessionId);
-        }
-        return response.data;
-      })();
-    }
-
-    /**
-     * A method to test id a given url contains the information
-     * needed to extract or generate a token
-     * @param {string} url The url containing the server informations
-     * @returns {bool} indicates it the url is valid
-     */
-    isValidUrl(url) {
-      var _this2 = this;
-
-      return _asyncToGenerator(function* () {
-        const params = yield _this2[$_parseUrl$](url);
-        return !!params.access_token || !!params.code;
-      })();
-    }
-
-    /**
-     * Generate a login url which the application should show to the user
-     * @param {Options} options the options combined which will be combined
-     *                          with the client's global options
-     * @returns {string} The resulting url which should be shown to the user
-     * @example
-     * const url = await authClient.getLoginUrl();
-     * location.href = url;
-     */
-    getLoginUrl(options) {
-      var _this3 = this;
-
-      return _asyncToGenerator(function* () {
-        const extendedOptions = _extends({}, _this3[$_options$], {
-          options
-        });
-        const config = yield _this3[$_getConfiguration$](extendedOptions);
-        const request = yield _this3[$_createRequestUrl$](extendedOptions, config);
-        return request;
-      })();
-    }
-
-    /**
-     * Transform a redirect url into a valid token
-     * @param {string} url The url containing the server informations
-     * @param {Options} options the options combined which will be combined
-     *                          with the client's global options
-     * @returns {TokenResponse} The resulting token
-     * @example
-     * if (window.location.hash) {
-     *   const token = await authClient.exchangeToken(window.location.href);
-     * }
-     */
-    exchangeToken(url, options) {
-      var _this4 = this;
-
-      return _asyncToGenerator(function* () {
-        const extendedOptions = _extends({}, _this4[$_options$], {
-          options
-        });
-        const {
-          store
-        } = extendedOptions;
-        const codeResponse = yield _this4[$_parseUrl$](url);
-
-        if (codeResponse.access_token) {
-          store.removeItem(codeResponse.session_state);
-          return codeResponse;
-        } else if (codeResponse.code) {
-          const config = yield _this4[$_getConfiguration$](extendedOptions);
-          const response = yield _this4[$_requestToken$](_extends({
-            code: codeResponse.code,
-            sessionId: codeResponse.state
-          }, extendedOptions), config);
-
-          return response;
-        }
-        return undefined;
-      })();
-    }
-
-    /**
-     * Generates a new token, either using the refreshToken or the username
-     * and password supplied to options
-     * @param {Options} options the options combined which will be combined
-     *                          with the client's global options
-     * @returns {TokenResponse} The resulting token
-     * @example
-     * const token = await authClient.getToken({
-     *   username: 'admin',
-     *   password: 'god',
-     * });
-     */
-    getToken(options) {
-      var _this5 = this;
-
-      return _asyncToGenerator(function* () {
-        const extendedOptions = _extends({}, _this5[$_options$], {
-          options
-        });
-        const config = yield _this5[$_getConfiguration$](extendedOptions);
-        const response = yield _this5[$_requestToken$](extendedOptions, config);
-
-        console.log(response);
-        return response;
-      })();
-    }
+    this._options = _extends({}, defaultOptions, {
+      store: _config2.default.get('createStore') ? _config2.default.get('createStore')() : undefined,
+      crypto: _config2.default.get('createCrypto') ? _config2.default.get('createCrypto')() : undefined
+    }, options);
   }
 
-  return AuthClient;
-}();
+  /** @ignore */
+  _getConfiguration(options) {
+    return _asyncToGenerator(function* () {
+      const { baseUrl } = options;
+      const url = `${baseUrl}/.well-known/openid-configuration`;
+      const response = yield _axios2.default.get(url);
+      return response.data;
+    })();
+  }
+
+  /** @ignore */
+  /* async _getKeys(options) {
+    const { baseUrl } = options;
+    const url = `${baseUrl}/.well-known/openid-configuration/jwks`;
+    const response = await axios.get(url);
+    return response.data;
+  } */
+
+  /** @ignore */
+  _createVerifier(options) {
+    return _asyncToGenerator(function* () {
+      const { crypto } = options;
+      const verifier = crypto.random();
+      const challengeBytes = yield crypto.sha256(verifier);
+      const challenge = yield crypto.bytesToBase64(challengeBytes);
+      return {
+        verifier,
+        challenge
+      };
+    })();
+  }
+
+  /** @ignore */
+  _createRequestUrl(options, { authorization_endpoint: authorizationEndpoint }) {
+    var _this = this;
+
+    return _asyncToGenerator(function* () {
+      const { store, crypto } = _this._options;
+      /* eslint-disable camelcase */
+      const {
+        clientId: client_id, redirectUri: redirect_uri,
+        scopes = [], responseTypes = ['code'], extra = {},
+        pkce: pkceEnabled
+      } = options;
+
+      const state = crypto ? crypto.random() : undefined;
+      const pkce = crypto && pkceEnabled ? yield _this._createVerifier(options) : undefined;
+
+      const params = _extends({
+        client_id,
+        redirect_uri,
+        scope: scopes ? scopes.join(' ') : undefined,
+        code_challenge: pkce ? pkce.challenge : undefined,
+        code_challenge_method: pkce ? 'S256' : undefined,
+        response_type: responseTypes.join(' '),
+        state,
+        nonce: responseTypes.includes('id_token') && crypto ? crypto.random() : undefined
+      }, extra);
+      /* eslint-enable camelcase */
+      if (store) {
+        yield store.setItem(state, _extends({}, params, pkce));
+      }
+      const parts = Object.keys(params).filter(function (key) {
+        return params[key];
+      }).map(function (key) {
+        return `${key}=${encodeURIComponent(params[key])}`;
+      });
+      return `${authorizationEndpoint}?${parts.join('&')}`;
+    })();
+  }
+
+  /** @ignore */
+  _parseUrl(url) {
+    const [, query] = url.split(url.indexOf('#') >= 0 ? '#' : '?');
+    if (!query) {
+      return {};
+    }
+    return query.split('&').reduce((output, current) => {
+      const [name, value] = current.split('=');
+      return _extends({}, output, {
+        [name]: decodeURIComponent(value)
+      });
+    }, {});
+  }
+
+  /** @ignore */
+  _requestToken(options, config) {
+    return _asyncToGenerator(function* () {
+      const {
+        clientId, tokenType, refreshToken,
+        store, code, sessionId, clientSecret,
+        redirectUri, username, password, scopes
+      } = options;
+
+      const session = store ? yield store.getItem(sessionId) : undefined;
+      const response = yield _axios2.default.post(config.token_endpoint, {
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: password ? 'password' : tokenType,
+        username,
+        password,
+        code,
+        scope: scopes ? scopes.join(' ') : undefined,
+        refresh_token: refreshToken,
+        code_verifier: session ? session.verifier : undefined
+      });
+      if (sessionId) {
+        store.removeItem(sessionId);
+      }
+      return response.data;
+    })();
+  }
+
+  /**
+   * A method to test id a given url contains the information
+   * needed to extract or generate a token
+   * @param {string} url The url containing the server informations
+   * @returns {bool} indicates it the url is valid
+   */
+  isValidUrl(url) {
+    var _this2 = this;
+
+    return _asyncToGenerator(function* () {
+      const params = yield _this2._parseUrl(url);
+      return !!params.access_token || !!params.code;
+    })();
+  }
+
+  /**
+   * Generate a login url which the application should show to the user
+   * @param {Options} options the options combined which will be combined
+   *                          with the client's global options
+   * @returns {string} The resulting url which should be shown to the user
+   * @example
+   * const url = await authClient.getLoginUrl();
+   * location.href = url;
+   */
+  getLoginUrl(options) {
+    var _this3 = this;
+
+    return _asyncToGenerator(function* () {
+      const extendedOptions = _extends({}, _this3._options, {
+        options
+      });
+      const config = yield _this3._getConfiguration(extendedOptions);
+      const request = yield _this3._createRequestUrl(extendedOptions, config);
+      return request;
+    })();
+  }
+
+  /**
+   * Transform a redirect url into a valid token
+   * @param {string} url The url containing the server informations
+   * @param {Options} options the options combined which will be combined
+   *                          with the client's global options
+   * @returns {TokenResponse} The resulting token
+   * @example
+   * if (window.location.hash) {
+   *   const token = await authClient.exchangeToken(window.location.href);
+   * }
+   */
+  exchangeToken(url, options) {
+    var _this4 = this;
+
+    return _asyncToGenerator(function* () {
+      const extendedOptions = _extends({}, _this4._options, {
+        options
+      });
+      const {
+        store
+      } = extendedOptions;
+      const codeResponse = yield _this4._parseUrl(url);
+
+      if (codeResponse.access_token) {
+        if (store) {
+          store.removeItem(codeResponse.session_state);
+        }
+        return codeResponse;
+      } else if (codeResponse.code) {
+        const config = yield _this4._getConfiguration(extendedOptions);
+        const response = yield _this4._requestToken(_extends({
+          code: codeResponse.code,
+          sessionId: codeResponse.state
+        }, extendedOptions), config);
+
+        return response;
+      }
+      return undefined;
+    })();
+  }
+
+  /**
+   * Generates a new token, either using the refreshToken or the username
+   * and password supplied to options
+   * @param {Options} options the options combined which will be combined
+   *                          with the client's global options
+   * @returns {TokenResponse} The resulting token
+   * @example
+   * const token = await authClient.getToken({
+   *   username: 'admin',
+   *   password: 'god',
+   * });
+   */
+  getToken(options) {
+    var _this5 = this;
+
+    return _asyncToGenerator(function* () {
+      const extendedOptions = _extends({}, _this5._options, {
+        scopes: undefined
+      }, options);
+      const config = yield _this5._getConfiguration(extendedOptions);
+      const response = yield _this5._requestToken(extendedOptions, config);
+      return response;
+    })();
+  }
+}
 
 exports.default = AuthClient;
-},{"axios":10,"./Crypto":8,"./Store":9}],4:[function(require,module,exports) {
+},{"axios":11,"./config":7}],42:[function(require,module,exports) {
+var global = (1,eval)("this");
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+class Store {
+  constructor(prefix) {
+    this._prefix = prefix;
+  }
+
+  getItem(name) {
+    var _this = this;
+
+    return _asyncToGenerator(function* () {
+      const key = `${_this._prefix}${name}`;
+      const raw = global.localStorage.getItem(key);
+      if (raw) {
+        return JSON.parse(raw);
+      }
+      return undefined;
+    })();
+  }
+
+  setItem(name, value) {
+    var _this2 = this;
+
+    return _asyncToGenerator(function* () {
+      const key = `${_this2._prefix}${name}`;
+      global.localStorage.setItem(key, JSON.stringify(value));
+    })();
+  }
+
+  removeItem(name) {
+    var _this3 = this;
+
+    return _asyncToGenerator(function* () {
+      const key = `${_this3._prefix}${name}`;
+      global.localStorage.removeItem(key);
+    })();
+  }
+}
+
+exports.default = Store;
+},{}],43:[function(require,module,exports) {
+var global = (1,eval)("this");
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const HAS_CRYPTO = typeof window !== 'undefined' && !!global.crypto;
+const encoder = global.TextEncoder ? new global.TextEncoder('utf-8') : undefined;
+
+/** @ignore */
+const arrayBufferToBase64 = buffer => {
+  let binary = '';
+  const bytes = new global.Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i += 1) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return global.btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+};
+
+/** @ignore */
+const bufferToString = exports.bufferToString = buffer => {
+  const state = [];
+  for (let i = 0; i < buffer.byteLength; i += 1) {
+    const index = buffer[i] % CHARSET.length | 0; // eslint-disable-line no-bitwise
+    state.push(CHARSET[index]);
+  }
+  return state.join('').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+};
+
+class Crypto {
+  sha256(value) {
+    return _asyncToGenerator(function* () {
+      const encoded = encoder.encode(value);
+      const hashed = yield global.crypto.subtle.digest('SHA-256', encoded);
+      return hashed;
+    })();
+  }
+
+  bytesToBase64(value) {
+    return arrayBufferToBase64(value);
+  }
+
+  random(sizeInBytes = 32) {
+    const buffer = new Uint8Array(sizeInBytes);
+    if (HAS_CRYPTO) {
+      global.crypto.getRandomValues(buffer);
+    } else {
+      // fall back to Math.random() if nothing else is available
+      for (let i = 0; i < sizeInBytes; i += 1) {
+        buffer[i] = Math.random();
+      }
+    }
+    return bufferToString(buffer);
+  }
+}
+
+exports.default = Crypto;
+},{}],41:[function(require,module,exports) {
+'use strict';
+
 var _AuthClient = require('./AuthClient');
 
 var _AuthClient2 = _interopRequireDefault(_AuthClient);
 
+var _config = require('./config');
+
+var _config2 = _interopRequireDefault(_config);
+
+var _Store = require('./Store.web');
+
+var _Store2 = _interopRequireDefault(_Store);
+
+var _Crypto = require('./Crypto.web');
+
+var _Crypto2 = _interopRequireDefault(_Crypto);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = _AuthClient2.default;
-},{"./AuthClient":7}],5:[function(require,module,exports) {
+_config2.default.set('createStore', () => new _Store2.default());
+_config2.default.set('createCrypto', () => new _Crypto2.default());
+
+module.exports = _AuthClient2.default;
+},{"./AuthClient":6,"./config":7,"./Store.web":42,"./Crypto.web":43}],4:[function(require,module,exports) {
 var global = (1,eval)("this");
 'use strict';
 
@@ -2168,14 +2168,14 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = {
   base: {
     baseUrl: 'https://authclient-demo.eu.auth0.com',
-    clientId: 'KhPH59sdDkNo1u9a70i17aA3ZRGuk1C5',
-    clientSecret: 'uTpE4Zwi1dReiO3O5pfjmDh2vCHqOyT3qlXq6NweB9_AFU76sXrqj3nC1cGHRjpy',
+    clientId: 'tseHxrplUHTS7kBzYjpZSACd8rnXbYW4',
+    clientSecret: 'HkHH1COc222rHtwKa3ufduf03rCHS-fzc9b8Xij4l6MHQSzwqMe5Ijg6OW1jL9zg',
     redirectUri: `${global.location.protocol}//${global.location.host}${global.location.pathname}`
   },
   authCode: {
     baseUrl: 'https://authclient-demo.eu.auth0.com',
-    clientId: 'KhPH59sdDkNo1u9a70i17aA3ZRGuk1C5',
-    clientSecret: 'uTpE4Zwi1dReiO3O5pfjmDh2vCHqOyT3qlXq6NweB9_AFU76sXrqj3nC1cGHRjpy',
+    clientId: 'tseHxrplUHTS7kBzYjpZSACd8rnXbYW4',
+    clientSecret: 'HkHH1COc222rHtwKa3ufduf03rCHS-fzc9b8Xij4l6MHQSzwqMe5Ijg6OW1jL9zg',
     redirectUri: `${global.location.protocol}//${global.location.host}${global.location.pathname}`,
     responseTypes: ['code'],
     pkce: true,
@@ -2183,10 +2183,17 @@ exports.default = {
   },
   implicit: {
     baseUrl: 'https://authclient-demo.eu.auth0.com',
-    clientId: 'cn4GgGv0Sw7flUZF2tKO1DXiw402AoGa',
+    clientId: 'tseHxrplUHTS7kBzYjpZSACd8rnXbYW4',
     redirectUri: `${global.location.protocol}//${global.location.host}${global.location.pathname}`,
     responseTypes: ['id_token', 'token'],
     pkce: true,
+    scopes: ['openid', 'profile']
+  },
+  password: {
+    baseUrl: 'https://authclient-demo.eu.auth0.com',
+    clientId: 'tseHxrplUHTS7kBzYjpZSACd8rnXbYW4',
+    clientSecret: 'HkHH1COc222rHtwKa3ufduf03rCHS-fzc9b8Xij4l6MHQSzwqMe5Ijg6OW1jL9zg',
+    redirectUri: `${global.location.protocol}//${global.location.host}${global.location.pathname}`,
     scopes: ['openid', 'profile']
   }
 };
@@ -2194,7 +2201,7 @@ exports.default = {
 var global = (1,eval)("this");
 'use strict';
 
-var _index = require('../src/index');
+var _index = require('../src/index.web');
 
 var _index2 = _interopRequireDefault(_index);
 
@@ -2206,9 +2213,26 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-const implicitBtn = global.document.querySelector('#implicit');
-const authCode = global.document.querySelector('#authcode');
-const main = global.document.querySelector('#main');
+const elms = {
+  implicitBtn: global.document.querySelector('#implicit'),
+  authCode: global.document.querySelector('#authcode'),
+  password: global.document.querySelector('#password'),
+  pass: {
+    box: global.document.querySelector('#passwordBox'),
+    username: global.document.querySelector('#usernametxt'),
+    password: global.document.querySelector('#passwordtxt'),
+    login: global.document.querySelector('#passwordLogin')
+  },
+  main: global.document.querySelector('#main'),
+  token: global.document.querySelector('#token')
+};
+
+const showToken = token => {
+  elms.pass.box.style.display = 'none';
+  elms.main.style.display = 'flex';
+  elms.token.style.display = 'block';
+  elms.token.innerHTML = JSON.stringify(token, undefined, '  ');
+};
 
 const boot = (() => {
   var _ref = _asyncToGenerator(function* (configuration, run) {
@@ -2216,10 +2240,9 @@ const boot = (() => {
     const isValidUrl = yield authClient.isValidUrl(global.location.href);
     if (isValidUrl) {
       const token = yield authClient.exchangeToken(global.location.href);
-      main.innerHTML = JSON.stringify(token, undefined, '  ');
+      showToken(token);
       global.history.replaceState(undefined, undefined, global.location.pathname);
     } else if (run) {
-      main.innerHTML = '...redirecting';
       const url = yield authClient.getLoginUrl();
       global.location.href = url;
     }
@@ -2230,10 +2253,22 @@ const boot = (() => {
   };
 })();
 
-implicitBtn.onclick = () => boot(_config2.default.implicit, true).catch(err => console.error(err));
-authCode.onclick = () => boot(_config2.default.authCode, true).catch(err => console.error(err));
+elms.implicitBtn.onclick = () => boot(_config2.default.implicit, true).catch(err => console.error(err));
+elms.authCode.onclick = () => boot(_config2.default.authCode, true).catch(err => console.error(err));
+elms.password.onclick = () => {
+  elms.pass.box.style.display = 'flex';
+  elms.main.style.display = 'none';
+};
+elms.pass.login.onclick = _asyncToGenerator(function* () {
+  const authClient = new _index2.default(_config2.default.password);
+  const token = yield authClient.getToken({
+    username: elms.pass.username.value,
+    password: elms.pass.password.value
+  });
+  showToken(token);
+});
 boot(_config2.default.base, false).catch(err => console.error(err));
-},{"../src/index":4,"./config":5}],37:[function(require,module,exports) {
+},{"../src/index.web":41,"./config":4}],54:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -2255,7 +2290,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '62498' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '58675' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -2356,5 +2391,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[37,2])
+},{}]},{},[54,2])
 //# sourceMappingURL=/authclient/demo/da0d0e1f141d320badd2a5ebba264f13.map

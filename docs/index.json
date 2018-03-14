@@ -567,7 +567,7 @@
     "__docId__": 48,
     "kind": "file",
     "name": "src/AuthClient.js",
-    "content": "import axios from 'axios';\nimport Crypto from './Crypto';\nimport Store from './Store';\n\nconst defaultOptions = {\n  store: new Store('auth_'),\n  tokenType: 'authorization_code',\n  crypto: new Crypto(),\n};\n\n/**\n  @typedef {Object} TokenTypes\n  @property {string} baseUrl\n  @property {string} clientId\n*/\n\n/**\n  @typedef {Object} ResponseTypes\n  @property {string} baseUrl\n  @property {string} clientId\n*/\n\n/**\n  @typedef {Object} Options\n  @property {string} baseUrl\n  @property {string} clientId\n  @property {string} [clientSecret]\n  @property {string} redirectUri\n  @property {ResponseTypes[]} responseTypes\n  @property {string[]} scopes\n  @property {Store} [store]\n  @property {TokenTypes} [tokenType]\n  @property {Crypto} [crypto]\n  @property {string} [username]\n  @property {string} [password]\n  @property {string} [refreshToken]\n  @property {string[]} [acrs]\n*/\n\n/**\n  @typedef {Object} TokenResponse\n*/\n\n/**\n * Client\n *\n * @example\n * const authClient = new AuthClient({\n *   baseUrl: 'https://your-open-id-server.com',\n *   clientId: 'your_client_id',\n *   redirectUri: 'https://your-site.com',\n *   responseTypes: ['id_token', 'token'],\n *   scopes: [\n *     'openid',\n *     'profile',\n *   ],\n * });\n *\n * const url = await authClient.getLoginUrl();\n * window.location.href = url;\n */\nclass AuthClient {\n  /**\n   *\n   * @param {Options} options\n   */\n  constructor(options) {\n    /** @ignore */\n    this._options = {\n      ...defaultOptions,\n      ...options,\n    };\n  }\n\n  /** @ignore */\n  async _getConfiguration(options) {\n    const { baseUrl } = options;\n    const url = `${baseUrl}/.well-known/openid-configuration`;\n    const response = await axios.get(url);\n    return response.data;\n  }\n\n  /** @ignore */\n  async _getKeys(options) {\n    const { baseUrl } = options;\n    const url = `${baseUrl}/.well-known/openid-configuration/jwks`;\n    const response = await axios.get(url);\n    return response.data;\n  }\n\n  /** @ignore */\n  async _createVerifier(options) {\n    const { crypto } = options;\n    const verifier = crypto.random();\n    const challengeBytes = await crypto.sha256(verifier);\n    const challenge = await crypto.bytesToBase64(challengeBytes);\n    return {\n      verifier,\n      challenge,\n    };\n  }\n\n  /** @ignore */\n  async _createRequestUrl(options, { authorization_endpoint: authorizationEndpoint }) {\n    const { store, crypto } = this._options;\n    /* eslint-disable camelcase */\n    const {\n      clientId: client_id,\n      redirectUri: redirect_uri,\n      scopes = [],\n      responseTypes = ['code'],\n      extra = {},\n      pkce: pkceEnabled,\n    } = options;\n\n    const state = crypto.random();\n    let pkce;\n    if (crypto && pkceEnabled) {\n      pkce = await this._createVerifier(options);\n    }\n\n    const params = {\n      client_id,\n      redirect_uri,\n      scope: scopes ? scopes.join(' ') : undefined,\n      code_challenge: pkce ? pkce.challenge : undefined,\n      code_challenge_method: pkce ? 'S256' : undefined,\n      response_type: responseTypes.join(' '),\n      state,\n      nonce: responseTypes.includes('id_token') ? crypto.random() : undefined,\n      ...extra,\n    };\n    /* eslint-enable camelcase */\n\n    await store.setItem(state, {\n      ...params,\n      ...pkce,\n    });\n\n    const parts = Object.keys(params).filter(key => params[key]).map(key => `${key}=${encodeURIComponent(params[key])}`);\n    return `${authorizationEndpoint}?${parts.join('&')}`;\n  }\n\n  /** @ignore */\n  _parseUrl(url) {\n    const [, query] = url.split(url.indexOf('#') >= 0 ? '#' : '?');\n    if (!query) {\n      return {};\n    }\n    return query.split('&').reduce((output, current) => {\n      const [name, value] = current.split('=');\n      return {\n        ...output,\n        [name]: decodeURIComponent(value),\n      };\n    }, {});\n  }\n\n  /** @ignore */\n  async _requestToken(options, config) {\n    const {\n      clientId,\n      tokenType,\n      refreshToken,\n      store,\n      code,\n      sessionId,\n      clientSecret,\n      redirectUri,\n      username,\n      password,\n      // acrs,\n      // scopes,\n    } = options;\n\n    const session = await store.getItem(sessionId);\n    const response = await axios.post(config.token_endpoint, {\n      client_id: clientId,\n      client_secret: clientSecret,\n      redirect_uri: redirectUri,\n      grant_type: tokenType,\n      username,\n      password,\n      code,\n      // scope: scopes ? scopes.join(' ') : undefined,\n      // acr_values: acrs,\n      refresh_token: refreshToken,\n      code_verifier: session ? session.verifier : undefined,\n    });\n    if (sessionId) {\n      store.removeItem(sessionId);\n    }\n    return response.data;\n  }\n\n  /**\n   * A method to test id a given url contains the information\n   * needed to extract or generate a token\n   * @param {string} url The url containing the server informations\n   * @returns {bool} indicates it the url is valid\n   */\n  async isValidUrl(url) {\n    const params = await this._parseUrl(url);\n    return !!params.access_token || !!params.code;\n  }\n\n  /**\n   * Generate a login url which the application should show to the user\n   * @param {Options} options the options combined which will be combined\n   *                          with the client's global options\n   * @returns {string} The resulting url which should be shown to the user\n   * @example\n   * const url = await authClient.getLoginUrl();\n   * location.href = url;\n   */\n  async getLoginUrl(options) {\n    const extendedOptions = {\n      ...this._options,\n      options,\n    };\n    const config = await this._getConfiguration(extendedOptions);\n    const request = await this._createRequestUrl(extendedOptions, config);\n    return request;\n  }\n\n  /**\n   * Transform a redirect url into a valid token\n   * @param {string} url The url containing the server informations\n   * @param {Options} options the options combined which will be combined\n   *                          with the client's global options\n   * @returns {TokenResponse} The resulting token\n   * @example\n   * if (window.location.hash) {\n   *   const token = await authClient.exchangeToken(window.location.href);\n   * }\n   */\n  async exchangeToken(url, options) {\n    const extendedOptions = {\n      ...this._options,\n      options,\n    };\n    const {\n      store,\n    } = extendedOptions;\n    const codeResponse = await this._parseUrl(url);\n\n    if (codeResponse.access_token) {\n      store.removeItem(codeResponse.session_state);\n      return codeResponse;\n    } else if (codeResponse.code) {\n      const config = await this._getConfiguration(extendedOptions);\n      const response = await this._requestToken({\n        code: codeResponse.code,\n        sessionId: codeResponse.state,\n        ...extendedOptions,\n      }, config);\n\n      return response;\n    }\n    return undefined;\n  }\n\n  /**\n   * Generates a new token, either using the refreshToken or the username\n   * and password supplied to options\n   * @param {Options} options the options combined which will be combined\n   *                          with the client's global options\n   * @returns {TokenResponse} The resulting token\n   * @example\n   * const token = await authClient.getToken({\n   *   username: 'admin',\n   *   password: 'god',\n   * });\n   */\n  async getToken(options) {\n    const extendedOptions = {\n      ...this._options,\n      options,\n    };\n    const config = await this._getConfiguration(extendedOptions);\n    const response = await this._requestToken(extendedOptions, config);\n\n    console.log(response);\n    return response;\n  }\n}\n\nexport default AuthClient;\n",
+    "content": "import axios from 'axios';\nimport configManager from 'config';\n\nconst defaultOptions = {\n  tokenType: 'authorization_code',\n};\n\n/**\n  @typedef {Object} TokenTypes\n  @property {string} baseUrl\n  @property {string} clientId\n*/\n\n/**\n  @typedef {Object} ResponseTypes\n  @property {string} baseUrl\n  @property {string} clientId\n*/\n\n/**\n  @typedef {Object} Options\n  @property {string} baseUrl\n  @property {string} clientId\n  @property {string} [clientSecret]\n  @property {string} redirectUri\n  @property {ResponseTypes[]} responseTypes\n  @property {string[]} scopes\n  @property {Store} [store]\n  @property {TokenTypes} [tokenType]\n  @property {Crypto} [crypto]\n  @property {string} [username]\n  @property {string} [password]\n  @property {string} [refreshToken]\n  @property {string[]} [acrs]\n*/\n\n/**\n  @typedef {Object} TokenResponse\n*/\n\n/**\n * Client\n *\n * @example\n * const authClient = new AuthClient({\n *   baseUrl: 'https://your-open-id-server.com',\n *   clientId: 'your_client_id',\n *   redirectUri: 'https://your-site.com',\n *   responseTypes: ['id_token', 'token'],\n *   scopes: [\n *     'openid',\n *     'profile',\n *   ],\n * });\n *\n * const url = await authClient.getLoginUrl();\n * window.location.href = url;\n */\nclass AuthClient {\n  /**\n   *\n   * @param {Options} options\n   */\n  constructor(options) {\n    /** @ignore */\n    this._options = {\n      ...defaultOptions,\n      store: configManager.get('createStore')\n        ? configManager.get('createStore')()\n        : undefined,\n      crypto: configManager.get('createCrypto')\n        ? configManager.get('createCrypto')()\n        : undefined,\n      ...options,\n    };\n  }\n\n  /** @ignore */\n  async _getConfiguration(options) {\n    const { baseUrl } = options;\n    const url = `${baseUrl}/.well-known/openid-configuration`;\n    const response = await axios.get(url);\n    return response.data;\n  }\n\n  /** @ignore */\n  /* async _getKeys(options) {\n    const { baseUrl } = options;\n    const url = `${baseUrl}/.well-known/openid-configuration/jwks`;\n    const response = await axios.get(url);\n    return response.data;\n  } */\n\n  /** @ignore */\n  async _createVerifier(options) {\n    const { crypto } = options;\n    const verifier = crypto.random();\n    const challengeBytes = await crypto.sha256(verifier);\n    const challenge = await crypto.bytesToBase64(challengeBytes);\n    return {\n      verifier,\n      challenge,\n    };\n  }\n\n  /** @ignore */\n  async _createRequestUrl(options, { authorization_endpoint: authorizationEndpoint }) {\n    const { store, crypto } = this._options;\n    /* eslint-disable camelcase */\n    const {\n      clientId: client_id, redirectUri: redirect_uri,\n      scopes = [], responseTypes = ['code'], extra = {},\n      pkce: pkceEnabled,\n    } = options;\n\n    const state = crypto ? crypto.random() : undefined;\n    const pkce = crypto && pkceEnabled ? await this._createVerifier(options) : undefined;\n\n    const params = {\n      client_id,\n      redirect_uri,\n      scope: scopes ? scopes.join(' ') : undefined,\n      code_challenge: pkce ? pkce.challenge : undefined,\n      code_challenge_method: pkce ? 'S256' : undefined,\n      response_type: responseTypes.join(' '),\n      state,\n      nonce: responseTypes.includes('id_token') && crypto ? crypto.random() : undefined,\n      ...extra,\n    };\n    /* eslint-enable camelcase */\n    if (store) {\n      await store.setItem(state, { ...params, ...pkce });\n    }\n    const parts = Object.keys(params).filter(key => params[key]).map(key => `${key}=${encodeURIComponent(params[key])}`);\n    return `${authorizationEndpoint}?${parts.join('&')}`;\n  }\n\n  /** @ignore */\n  _parseUrl(url) {\n    const [, query] = url.split(url.indexOf('#') >= 0 ? '#' : '?');\n    if (!query) {\n      return {};\n    }\n    return query.split('&').reduce((output, current) => {\n      const [name, value] = current.split('=');\n      return {\n        ...output,\n        [name]: decodeURIComponent(value),\n      };\n    }, {});\n  }\n\n  /** @ignore */\n  async _requestToken(options, config) {\n    const {\n      clientId, tokenType, refreshToken,\n      store, code, sessionId, clientSecret,\n      redirectUri, username, password, scopes,\n    } = options;\n\n    const session = store ? await store.getItem(sessionId) : undefined;\n    const response = await axios.post(config.token_endpoint, {\n      client_id: clientId,\n      client_secret: clientSecret,\n      redirect_uri: redirectUri,\n      grant_type: password ? 'password' : tokenType,\n      username,\n      password,\n      code,\n      scope: scopes ? scopes.join(' ') : undefined,\n      refresh_token: refreshToken,\n      code_verifier: session ? session.verifier : undefined,\n    });\n    if (sessionId) {\n      store.removeItem(sessionId);\n    }\n    return response.data;\n  }\n\n  /**\n   * A method to test id a given url contains the information\n   * needed to extract or generate a token\n   * @param {string} url The url containing the server informations\n   * @returns {bool} indicates it the url is valid\n   */\n  async isValidUrl(url) {\n    const params = await this._parseUrl(url);\n    return !!params.access_token || !!params.code;\n  }\n\n  /**\n   * Generate a login url which the application should show to the user\n   * @param {Options} options the options combined which will be combined\n   *                          with the client's global options\n   * @returns {string} The resulting url which should be shown to the user\n   * @example\n   * const url = await authClient.getLoginUrl();\n   * location.href = url;\n   */\n  async getLoginUrl(options) {\n    const extendedOptions = {\n      ...this._options,\n      options,\n    };\n    const config = await this._getConfiguration(extendedOptions);\n    const request = await this._createRequestUrl(extendedOptions, config);\n    return request;\n  }\n\n  /**\n   * Transform a redirect url into a valid token\n   * @param {string} url The url containing the server informations\n   * @param {Options} options the options combined which will be combined\n   *                          with the client's global options\n   * @returns {TokenResponse} The resulting token\n   * @example\n   * if (window.location.hash) {\n   *   const token = await authClient.exchangeToken(window.location.href);\n   * }\n   */\n  async exchangeToken(url, options) {\n    const extendedOptions = {\n      ...this._options,\n      options,\n    };\n    const {\n      store,\n    } = extendedOptions;\n    const codeResponse = await this._parseUrl(url);\n\n    if (codeResponse.access_token) {\n      if (store) {\n        store.removeItem(codeResponse.session_state);\n      }\n      return codeResponse;\n    } else if (codeResponse.code) {\n      const config = await this._getConfiguration(extendedOptions);\n      const response = await this._requestToken({\n        code: codeResponse.code,\n        sessionId: codeResponse.state,\n        ...extendedOptions,\n      }, config);\n\n      return response;\n    }\n    return undefined;\n  }\n\n  /**\n   * Generates a new token, either using the refreshToken or the username\n   * and password supplied to options\n   * @param {Options} options the options combined which will be combined\n   *                          with the client's global options\n   * @returns {TokenResponse} The resulting token\n   * @example\n   * const token = await authClient.getToken({\n   *   username: 'admin',\n   *   password: 'god',\n   * });\n   */\n  async getToken(options) {\n    const extendedOptions = {\n      ...this._options,\n      scopes: undefined,\n      ...options,\n    };\n    const config = await this._getConfiguration(extendedOptions);\n    const response = await this._requestToken(extendedOptions, config);\n    return response;\n  }\n}\n\nexport default AuthClient;\n",
     "static": true,
     "longname": "/Users/morten/Projects/sampension/auth-client/src/AuthClient.js",
     "access": "public",
@@ -638,11 +638,11 @@
     "importPath": "authenticatornator",
     "importStyle": null,
     "description": null,
-    "lineNumber": 9,
+    "lineNumber": 8,
     "undocument": true,
     "type": {
       "types": [
-        "{\"store\": *, \"tokenType\": string, \"crypto\": *}"
+        "{\"tokenType\": string}"
       ]
     },
     "ignore": true
@@ -906,7 +906,7 @@
     "examples": [
       "const authClient = new AuthClient({\n  baseUrl: 'https://your-open-id-server.com',\n  clientId: 'your_client_id',\n  redirectUri: 'https://your-site.com',\n  responseTypes: ['id_token', 'token'],\n  scopes: [\n    'openid',\n    'profile',\n  ],\n});\n\nconst url = await authClient.getLoginUrl();\nwindow.location.href = url;"
     ],
-    "lineNumber": 66,
+    "lineNumber": 63,
     "interface": false
   },
   {
@@ -920,7 +920,7 @@
     "longname": "src/AuthClient.js~AuthClient#constructor",
     "access": "public",
     "description": "",
-    "lineNumber": 71,
+    "lineNumber": 68,
     "params": [
       {
         "nullable": null,
@@ -943,7 +943,7 @@
     "longname": "src/AuthClient.js~AuthClient#_options",
     "access": "private",
     "description": null,
-    "lineNumber": 73,
+    "lineNumber": 70,
     "ignore": true,
     "type": {
       "types": [
@@ -981,15 +981,15 @@
   {
     "__docId__": 60,
     "kind": "method",
-    "name": "_getKeys",
+    "name": "_createVerifier",
     "memberof": "src/AuthClient.js~AuthClient",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "src/AuthClient.js~AuthClient#_getKeys",
+    "longname": "src/AuthClient.js~AuthClient#_createVerifier",
     "access": "private",
     "description": null,
-    "lineNumber": 87,
+    "lineNumber": 95,
     "ignore": true,
     "params": [
       {
@@ -1008,33 +1008,6 @@
   {
     "__docId__": 61,
     "kind": "method",
-    "name": "_createVerifier",
-    "memberof": "src/AuthClient.js~AuthClient",
-    "generator": false,
-    "async": false,
-    "static": false,
-    "longname": "src/AuthClient.js~AuthClient#_createVerifier",
-    "access": "private",
-    "description": null,
-    "lineNumber": 97,
-    "ignore": true,
-    "params": [
-      {
-        "name": "options",
-        "types": [
-          "*"
-        ]
-      }
-    ],
-    "return": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 62,
-    "kind": "method",
     "name": "_createRequestUrl",
     "memberof": "src/AuthClient.js~AuthClient",
     "generator": false,
@@ -1043,7 +1016,7 @@
     "longname": "src/AuthClient.js~AuthClient#_createRequestUrl",
     "access": "private",
     "description": null,
-    "lineNumber": 111,
+    "lineNumber": 109,
     "ignore": true,
     "params": [
       {
@@ -1070,7 +1043,7 @@
     }
   },
   {
-    "__docId__": 63,
+    "__docId__": 62,
     "kind": "method",
     "name": "_parseUrl",
     "memberof": "src/AuthClient.js~AuthClient",
@@ -1080,7 +1053,7 @@
     "longname": "src/AuthClient.js~AuthClient#_parseUrl",
     "access": "private",
     "description": null,
-    "lineNumber": 156,
+    "lineNumber": 148,
     "ignore": true,
     "params": [
       {
@@ -1097,7 +1070,7 @@
     }
   },
   {
-    "__docId__": 64,
+    "__docId__": 63,
     "kind": "method",
     "name": "_requestToken",
     "memberof": "src/AuthClient.js~AuthClient",
@@ -1107,7 +1080,7 @@
     "longname": "src/AuthClient.js~AuthClient#_requestToken",
     "access": "private",
     "description": null,
-    "lineNumber": 170,
+    "lineNumber": 162,
     "ignore": true,
     "params": [
       {
@@ -1130,7 +1103,7 @@
     }
   },
   {
-    "__docId__": 65,
+    "__docId__": 64,
     "kind": "method",
     "name": "isValidUrl",
     "memberof": "src/AuthClient.js~AuthClient",
@@ -1140,7 +1113,7 @@
     "longname": "src/AuthClient.js~AuthClient#isValidUrl",
     "access": "public",
     "description": "A method to test id a given url contains the information\nneeded to extract or generate a token",
-    "lineNumber": 214,
+    "lineNumber": 196,
     "unknown": [
       {
         "tagName": "@returns",
@@ -1169,7 +1142,7 @@
     }
   },
   {
-    "__docId__": 66,
+    "__docId__": 65,
     "kind": "method",
     "name": "getLoginUrl",
     "memberof": "src/AuthClient.js~AuthClient",
@@ -1182,7 +1155,7 @@
     "examples": [
       "const url = await authClient.getLoginUrl();\nlocation.href = url;"
     ],
-    "lineNumber": 232,
+    "lineNumber": 214,
     "unknown": [
       {
         "tagName": "@returns",
@@ -1211,7 +1184,7 @@
     }
   },
   {
-    "__docId__": 67,
+    "__docId__": 66,
     "kind": "method",
     "name": "exchangeToken",
     "memberof": "src/AuthClient.js~AuthClient",
@@ -1224,7 +1197,7 @@
     "examples": [
       "if (window.location.hash) {\n  const token = await authClient.exchangeToken(window.location.href);\n}"
     ],
-    "lineNumber": 256,
+    "lineNumber": 238,
     "unknown": [
       {
         "tagName": "@returns",
@@ -1263,7 +1236,7 @@
     }
   },
   {
-    "__docId__": 68,
+    "__docId__": 67,
     "kind": "method",
     "name": "getToken",
     "memberof": "src/AuthClient.js~AuthClient",
@@ -1276,7 +1249,7 @@
     "examples": [
       "const token = await authClient.getToken({\n  username: 'admin',\n  password: 'god',\n});"
     ],
-    "lineNumber": 296,
+    "lineNumber": 280,
     "unknown": [
       {
         "tagName": "@returns",
@@ -1305,10 +1278,73 @@
     }
   },
   {
+    "__docId__": 68,
+    "kind": "file",
+    "name": "src/AuthClient.spec.js",
+    "content": "import url from 'url';\nimport axios from 'axios';\nimport querystring from 'querystring';\nimport AuthClient from './AuthClient';\nimport Crypto from './Crypto.node';\nimport Store from './Store.node';\nimport config from '../demo/config';\n\njest.mock('axios');\n\ndescribe('AuthClient', () => {\n  beforeEach(() => {\n    axios.clear();\n    axios.setMock('get', 'https://authclient-demo.eu.auth0.com/.well-known/openid-configuration', {\n      authorization_endpoint: 'https://authclient-demo.eu.auth0.com/authorize',\n      token_endpoint: 'https://authclient-demo.eu.auth0.com/token',\n    });\n    axios.setMock('post', 'https://authclient-demo.eu.auth0.com/token', (data, extra) => extra.tokenAssert(data));\n  });\n\n  describe('implicit grant', () => {\n    describe('url generator', () => {\n      it('without crypto', async () => {\n        const client = new AuthClient(config.implicit);\n        const result = await client.getLoginUrl();\n        const parsed = url.parse(result);\n        const query = querystring.parse(parsed.query);\n        expect(parsed.host).toBe('authclient-demo.eu.auth0.com');\n        expect(query.client_id).toBe(config.implicit.clientId);\n        expect(query.code_challenge).toBeUndefined();\n        expect(query.code_challenge_method).toBeUndefined();\n        expect(query.redirect_uri).toBe('about://blank');\n        expect(query.response_type).toBe('id_token token');\n        expect(query.scope).toBe('openid profile');\n        expect(query.state).toBeUndefined();\n      });\n\n      it('with crypto', async () => {\n        const client = new AuthClient({\n          ...config.implicit,\n          crypto: new Crypto(),\n        });\n        const result = await client.getLoginUrl();\n        const parsed = url.parse(result);\n        const query = querystring.parse(parsed.query);\n        expect(parsed.host).toBe('authclient-demo.eu.auth0.com');\n        expect(query.client_id).toBe(config.implicit.clientId);\n        expect(query.code_challenge).toBeDefined();\n        expect(query.code_challenge_method).toBe('S256');\n        expect(query.redirect_uri).toBe('about://blank');\n        expect(query.response_type).toBe('id_token token');\n        expect(query.scope).toBe('openid profile');\n        expect(query.state).toBeDefined();\n      });\n    });\n\n\n    describe('token exchange', () => {\n      it('with query parameter', async () => {\n        const client = new AuthClient(config.implicit);\n        const token = await client.exchangeToken('https://localhost?access_token=test');\n        expect(token.access_token).toBe('test');\n      });\n\n      it('with hash', async () => {\n        const client = new AuthClient(config.implicit);\n        const token = await client.exchangeToken('https://localhost#access_token=test');\n        expect(token.access_token).toBe('test');\n      });\n    });\n  });\n\n  describe('authentication code grant', () => {\n    describe('url generator', () => {\n      it('without crypto', async () => {\n        const client = new AuthClient(config.authCode);\n        const result = await client.getLoginUrl();\n        const parsed = url.parse(result);\n        const query = querystring.parse(parsed.query);\n        expect(parsed.host).toBe('authclient-demo.eu.auth0.com');\n        expect(query.client_id).toBe(config.authCode.clientId);\n        expect(query.code_challenge).toBeUndefined();\n        expect(query.code_challenge_method).toBeUndefined();\n        expect(query.redirect_uri).toBe('about://blank');\n        expect(query.response_type).toBe('code');\n        expect(query.scope).toBe('openid profile');\n        expect(query.state).toBeUndefined();\n      });\n\n      it('with crypto', async () => {\n        const client = new AuthClient({\n          ...config.authCode,\n          crypto: new Crypto(),\n        });\n        const result = await client.getLoginUrl();\n        const parsed = url.parse(result);\n        const query = querystring.parse(parsed.query);\n        expect(parsed.host).toBe('authclient-demo.eu.auth0.com');\n        expect(query.client_id).toBe(config.authCode.clientId);\n        expect(query.code_challenge).toBeDefined();\n        expect(query.code_challenge_method).toBe('S256');\n        expect(query.redirect_uri).toBe('about://blank');\n        expect(query.response_type).toBe('code');\n        expect(query.scope).toBe('openid profile');\n        expect(query.state).toBeDefined();\n      });\n    });\n\n    describe('token exchange', () => {\n      it('without crypto', async () => {\n        const client = new AuthClient(config.authCode);\n        axios.setExtra({\n          tokenAssert: (data) => {\n            expect(data.client_id).toBe(config.authCode.clientId);\n            expect(data.client_secret).toBe(config.authCode.clientSecret);\n            expect(data.redirect_uri).toBe('about://blank');\n            expect(data.grant_type).toBe('authorization_code');\n            expect(data.username).toBeUndefined();\n            expect(data.password).toBeUndefined();\n            expect(data.code).toBe('test');\n            expect(data.scope).toBe('openid profile');\n            expect(data.refresh_token).toBeUndefined();\n            expect(data.code_verifier).toBeUndefined();\n            return {\n              access_token: 'test2',\n            };\n          },\n        });\n        const token = await client.exchangeToken('https://localhost?code=test');\n        expect(token.access_token).toBe('test2');\n      });\n\n      it('with crypto', async () => {\n        const store = new Store();\n        const crypto = new Crypto();\n        const client = new AuthClient({\n          ...config.authCode,\n          crypto,\n          store,\n        });\n        const result = await client.getLoginUrl();\n        const parsed = url.parse(result);\n        const query = querystring.parse(parsed.query);\n        expect(query.state).toBeDefined();\n        axios.setExtra({\n          tokenAssert: async (data) => {\n            expect(data.client_id).toBe(config.authCode.clientId);\n            expect(data.client_secret).toBe(config.authCode.clientSecret);\n            expect(data.redirect_uri).toBe('about://blank');\n            expect(data.grant_type).toBe('authorization_code');\n            expect(data.username).toBeUndefined();\n            expect(data.password).toBeUndefined();\n            expect(data.code).toBe('test');\n            expect(data.scope).toBe('openid profile');\n            expect(data.refresh_token).toBeUndefined();\n            expect(data.code_verifier).toBeDefined();\n            const challenge = query.code_challenge;\n            expect(crypto.bytesToBase64(await crypto.sha256(data.code_verifier))).toBe(challenge);\n            expect(challenge).toBeDefined();\n            return {\n              access_token: 'test2',\n            };\n          },\n        });\n        const token = await client.exchangeToken(`https://localhost?code=test&state=${query.state}`);\n        expect(token.access_token).toBe('test2');\n      });\n    });\n  });\n});\n",
+    "static": true,
+    "longname": "/Users/morten/Projects/sampension/auth-client/src/AuthClient.spec.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
     "__docId__": 69,
+    "kind": "variable",
+    "name": "_extends",
+    "memberof": "src/AuthClient.spec.js",
+    "static": true,
+    "longname": "src/AuthClient.spec.js~_extends",
+    "access": "private",
+    "export": false,
+    "importPath": "authenticatornator/lib/AuthClient.spec.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 70,
+    "kind": "function",
+    "name": "_asyncToGenerator",
+    "memberof": "src/AuthClient.spec.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~_asyncToGenerator",
+    "access": "private",
+    "export": false,
+    "importPath": "authenticatornator/lib/AuthClient.spec.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "params": [
+      {
+        "name": "fn",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 71,
     "kind": "file",
     "name": "src/Crypto.js",
-    "content": "const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\nconst HAS_CRYPTO = typeof window !== 'undefined' && !!global.crypto;\nconst encoder = global.TextEncoder ? new global.TextEncoder('utf-8') : undefined;\n\n/** @ignore */\nconst arrayBufferToBase64 = (buffer) => {\n  let binary = '';\n  const bytes = new global.Uint8Array(buffer);\n  const len = bytes.byteLength;\n  for (let i = 0; i < len; i += 1) {\n    binary += String.fromCharCode(bytes[i]);\n  }\n  return global.btoa(binary).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '');\n};\n\n/** @ignore */\nexport const bufferToString = (buffer) => {\n  const state = [];\n  for (let i = 0; i < buffer.byteLength; i += 1) {\n    const index = (buffer[i] % CHARSET.length) | 0; // eslint-disable-line no-bitwise\n    state.push(CHARSET[index]);\n  }\n  return state.join('').replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '');\n};\n\nclass Crypto {\n  async sha256(value) {\n    const encoded = encoder.encode(value);\n    const hashed = await global.crypto.subtle.digest('SHA-256', encoded);\n    return hashed;\n  }\n\n  bytesToBase64(value) {\n    return arrayBufferToBase64(value);\n  }\n\n  random(sizeInBytes = 32) {\n    const buffer = new Uint8Array(sizeInBytes);\n    if (HAS_CRYPTO) {\n      global.crypto.getRandomValues(buffer);\n    } else {\n      // fall back to Math.random() if nothing else is available\n      for (let i = 0; i < sizeInBytes; i += 1) {\n        buffer[i] = Math.random();\n      }\n    }\n    return bufferToString(buffer);\n  }\n}\n\nexport default Crypto;\n",
+    "content": "import crypto from 'crypto';\n\nfunction base64URLEncode(str) {\n  return str.toString('base64').replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '');\n}\n\nclass NodeCrypto {\n  async sha256(value) {\n    return crypto.createHash('sha256').update(value).digest();\n  }\n\n  bytesToBase64(value) {\n    return base64URLEncode(value);\n  }\n\n  random(sizeInBytes = 32) {\n    return base64URLEncode(crypto.randomBytes(sizeInBytes));\n  }\n}\n\nexport default NodeCrypto;\n",
     "static": true,
     "longname": "/Users/morten/Projects/sampension/auth-client/src/Crypto.js",
     "access": "public",
@@ -1316,7 +1352,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 70,
+    "__docId__": 72,
     "kind": "function",
     "name": "_asyncToGenerator",
     "memberof": "src/Crypto.js",
@@ -1347,15 +1383,188 @@
     "ignore": true
   },
   {
-    "__docId__": 71,
-    "kind": "variable",
-    "name": "CHARSET",
+    "__docId__": 73,
+    "kind": "function",
+    "name": "base64URLEncode",
     "memberof": "src/Crypto.js",
+    "generator": false,
+    "async": false,
     "static": true,
-    "longname": "src/Crypto.js~CHARSET",
+    "longname": "src/Crypto.js~base64URLEncode",
     "access": "public",
     "export": false,
     "importPath": "authenticatornator/lib/Crypto.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 5,
+    "undocument": true,
+    "params": [
+      {
+        "name": "str",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 74,
+    "kind": "class",
+    "name": "NodeCrypto",
+    "memberof": "src/Crypto.js",
+    "static": true,
+    "longname": "src/Crypto.js~NodeCrypto",
+    "access": "public",
+    "export": true,
+    "importPath": "authenticatornator/lib/Crypto.js",
+    "importStyle": "NodeCrypto",
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "interface": false
+  },
+  {
+    "__docId__": 75,
+    "kind": "method",
+    "name": "sha256",
+    "memberof": "src/Crypto.js~NodeCrypto",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/Crypto.js~NodeCrypto#sha256",
+    "access": "public",
+    "description": null,
+    "lineNumber": 10,
+    "undocument": true,
+    "params": [
+      {
+        "name": "value",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 76,
+    "kind": "method",
+    "name": "bytesToBase64",
+    "memberof": "src/Crypto.js~NodeCrypto",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/Crypto.js~NodeCrypto#bytesToBase64",
+    "access": "public",
+    "description": null,
+    "lineNumber": 16,
+    "undocument": true,
+    "params": [
+      {
+        "name": "value",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 77,
+    "kind": "method",
+    "name": "random",
+    "memberof": "src/Crypto.js~NodeCrypto",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/Crypto.js~NodeCrypto#random",
+    "access": "public",
+    "description": null,
+    "lineNumber": 20,
+    "undocument": true,
+    "params": [
+      {
+        "name": "sizeInBytes",
+        "optional": true,
+        "types": [
+          "number"
+        ],
+        "defaultRaw": 32,
+        "defaultValue": "32"
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 78,
+    "kind": "file",
+    "name": "src/Crypto.web.js",
+    "content": "const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\nconst HAS_CRYPTO = typeof window !== 'undefined' && !!global.crypto;\nconst encoder = global.TextEncoder ? new global.TextEncoder('utf-8') : undefined;\n\n/** @ignore */\nconst arrayBufferToBase64 = (buffer) => {\n  let binary = '';\n  const bytes = new global.Uint8Array(buffer);\n  const len = bytes.byteLength;\n  for (let i = 0; i < len; i += 1) {\n    binary += String.fromCharCode(bytes[i]);\n  }\n  return global.btoa(binary).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '');\n};\n\n/** @ignore */\nexport const bufferToString = (buffer) => {\n  const state = [];\n  for (let i = 0; i < buffer.byteLength; i += 1) {\n    const index = (buffer[i] % CHARSET.length) | 0; // eslint-disable-line no-bitwise\n    state.push(CHARSET[index]);\n  }\n  return state.join('').replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '');\n};\n\nclass Crypto {\n  async sha256(value) {\n    const encoded = encoder.encode(value);\n    const hashed = await global.crypto.subtle.digest('SHA-256', encoded);\n    return hashed;\n  }\n\n  bytesToBase64(value) {\n    return arrayBufferToBase64(value);\n  }\n\n  random(sizeInBytes = 32) {\n    const buffer = new Uint8Array(sizeInBytes);\n    if (HAS_CRYPTO) {\n      global.crypto.getRandomValues(buffer);\n    } else {\n      // fall back to Math.random() if nothing else is available\n      for (let i = 0; i < sizeInBytes; i += 1) {\n        buffer[i] = Math.random();\n      }\n    }\n    return bufferToString(buffer);\n  }\n}\n\nexport default Crypto;\n",
+    "static": true,
+    "longname": "/Users/morten/Projects/sampension/auth-client/src/Crypto.web.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 79,
+    "kind": "function",
+    "name": "_asyncToGenerator",
+    "memberof": "src/Crypto.web.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "src/Crypto.web.js~_asyncToGenerator",
+    "access": "private",
+    "export": false,
+    "importPath": "authenticatornator/lib/Crypto.web.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "params": [
+      {
+        "name": "fn",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 80,
+    "kind": "variable",
+    "name": "CHARSET",
+    "memberof": "src/Crypto.web.js",
+    "static": true,
+    "longname": "src/Crypto.web.js~CHARSET",
+    "access": "public",
+    "export": false,
+    "importPath": "authenticatornator/lib/Crypto.web.js",
     "importStyle": null,
     "description": null,
     "lineNumber": 3,
@@ -1368,15 +1577,15 @@
     "ignore": true
   },
   {
-    "__docId__": 72,
+    "__docId__": 81,
     "kind": "variable",
     "name": "HAS_CRYPTO",
-    "memberof": "src/Crypto.js",
+    "memberof": "src/Crypto.web.js",
     "static": true,
-    "longname": "src/Crypto.js~HAS_CRYPTO",
+    "longname": "src/Crypto.web.js~HAS_CRYPTO",
     "access": "public",
     "export": false,
-    "importPath": "authenticatornator/lib/Crypto.js",
+    "importPath": "authenticatornator/lib/Crypto.web.js",
     "importStyle": null,
     "description": null,
     "lineNumber": 4,
@@ -1389,15 +1598,15 @@
     "ignore": true
   },
   {
-    "__docId__": 73,
+    "__docId__": 82,
     "kind": "variable",
     "name": "encoder",
-    "memberof": "src/Crypto.js",
+    "memberof": "src/Crypto.web.js",
     "static": true,
-    "longname": "src/Crypto.js~encoder",
+    "longname": "src/Crypto.web.js~encoder",
     "access": "public",
     "export": false,
-    "importPath": "authenticatornator/lib/Crypto.js",
+    "importPath": "authenticatornator/lib/Crypto.web.js",
     "importStyle": null,
     "description": null,
     "lineNumber": 5,
@@ -1410,17 +1619,17 @@
     "ignore": true
   },
   {
-    "__docId__": 74,
+    "__docId__": 83,
     "kind": "function",
     "name": "arrayBufferToBase64",
-    "memberof": "src/Crypto.js",
+    "memberof": "src/Crypto.web.js",
     "generator": false,
     "async": false,
     "static": true,
-    "longname": "src/Crypto.js~arrayBufferToBase64",
+    "longname": "src/Crypto.web.js~arrayBufferToBase64",
     "access": "public",
     "export": false,
-    "importPath": "authenticatornator/lib/Crypto.js",
+    "importPath": "authenticatornator/lib/Crypto.web.js",
     "importStyle": null,
     "description": null,
     "lineNumber": 8,
@@ -1440,17 +1649,17 @@
     }
   },
   {
-    "__docId__": 75,
+    "__docId__": 84,
     "kind": "function",
     "name": "bufferToString",
-    "memberof": "src/Crypto.js",
+    "memberof": "src/Crypto.web.js",
     "generator": false,
     "async": false,
     "static": true,
-    "longname": "src/Crypto.js~bufferToString",
+    "longname": "src/Crypto.web.js~bufferToString",
     "access": "public",
     "export": true,
-    "importPath": "authenticatornator/lib/Crypto.js",
+    "importPath": "authenticatornator/lib/Crypto.web.js",
     "importStyle": "{bufferToString}",
     "description": null,
     "lineNumber": 19,
@@ -1470,15 +1679,15 @@
     }
   },
   {
-    "__docId__": 76,
+    "__docId__": 85,
     "kind": "class",
     "name": "Crypto",
-    "memberof": "src/Crypto.js",
+    "memberof": "src/Crypto.web.js",
     "static": true,
-    "longname": "src/Crypto.js~Crypto",
+    "longname": "src/Crypto.web.js~Crypto",
     "access": "public",
     "export": true,
-    "importPath": "authenticatornator/lib/Crypto.js",
+    "importPath": "authenticatornator/lib/Crypto.web.js",
     "importStyle": "Crypto",
     "description": null,
     "lineNumber": 28,
@@ -1486,14 +1695,14 @@
     "interface": false
   },
   {
-    "__docId__": 77,
+    "__docId__": 86,
     "kind": "method",
     "name": "sha256",
-    "memberof": "src/Crypto.js~Crypto",
+    "memberof": "src/Crypto.web.js~Crypto",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "src/Crypto.js~Crypto#sha256",
+    "longname": "src/Crypto.web.js~Crypto#sha256",
     "access": "public",
     "description": null,
     "lineNumber": 29,
@@ -1513,14 +1722,14 @@
     }
   },
   {
-    "__docId__": 78,
+    "__docId__": 87,
     "kind": "method",
     "name": "bytesToBase64",
-    "memberof": "src/Crypto.js~Crypto",
+    "memberof": "src/Crypto.web.js~Crypto",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "src/Crypto.js~Crypto#bytesToBase64",
+    "longname": "src/Crypto.web.js~Crypto#bytesToBase64",
     "access": "public",
     "description": null,
     "lineNumber": 37,
@@ -1540,14 +1749,14 @@
     }
   },
   {
-    "__docId__": 79,
+    "__docId__": 88,
     "kind": "method",
     "name": "random",
-    "memberof": "src/Crypto.js~Crypto",
+    "memberof": "src/Crypto.web.js~Crypto",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "src/Crypto.js~Crypto#random",
+    "longname": "src/Crypto.web.js~Crypto#random",
     "access": "public",
     "description": null,
     "lineNumber": 41,
@@ -1570,10 +1779,10 @@
     }
   },
   {
-    "__docId__": 80,
+    "__docId__": 89,
     "kind": "file",
     "name": "src/Store.js",
-    "content": "class Store {\n  constructor(prefix) {\n    this._prefix = prefix;\n  }\n\n  async getItem(name) {\n    const key = `${this._prefix}${name}`;\n    const raw = global.localStorage.getItem(key);\n    if (raw) {\n      return JSON.parse(raw);\n    }\n    return undefined;\n  }\n\n  async setItem(name, value) {\n    const key = `${this._prefix}${name}`;\n    global.localStorage.setItem(key, JSON.stringify(value));\n  }\n\n  async removeItem(name) {\n    const key = `${this._prefix}${name}`;\n    global.localStorage.removeItem(key);\n  }\n}\n\nexport default Store;\n",
+    "content": "class NodeStore {\n  constructor() {\n    this._data = {};\n  }\n\n  async getItem(name) {\n    return this._data[name];\n  }\n\n  async setItem(name, value) {\n    this._data[name] = value;\n  }\n\n  async removeItem(name) {\n    delete this._data[name];\n  }\n}\n\nexport default NodeStore;\n",
     "static": true,
     "longname": "/Users/morten/Projects/sampension/auth-client/src/Store.js",
     "access": "public",
@@ -1581,7 +1790,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 81,
+    "__docId__": 90,
     "kind": "function",
     "name": "_asyncToGenerator",
     "memberof": "src/Store.js",
@@ -1612,61 +1821,61 @@
     "ignore": true
   },
   {
-    "__docId__": 82,
+    "__docId__": 91,
     "kind": "class",
-    "name": "Store",
+    "name": "NodeStore",
     "memberof": "src/Store.js",
     "static": true,
-    "longname": "src/Store.js~Store",
+    "longname": "src/Store.js~NodeStore",
     "access": "public",
     "export": true,
     "importPath": "authenticatornator/lib/Store.js",
-    "importStyle": "Store",
+    "importStyle": "NodeStore",
     "description": null,
     "lineNumber": 3,
     "undocument": true,
     "interface": false
   },
   {
-    "__docId__": 83,
+    "__docId__": 92,
     "kind": "constructor",
     "name": "constructor",
-    "memberof": "src/Store.js~Store",
+    "memberof": "src/Store.js~NodeStore",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "src/Store.js~Store#constructor",
+    "longname": "src/Store.js~NodeStore#constructor",
     "access": "public",
     "description": null,
     "lineNumber": 4,
     "undocument": true
   },
   {
-    "__docId__": 84,
+    "__docId__": 93,
     "kind": "member",
-    "name": "_prefix",
-    "memberof": "src/Store.js~Store",
+    "name": "_data",
+    "memberof": "src/Store.js~NodeStore",
     "static": false,
-    "longname": "src/Store.js~Store#_prefix",
+    "longname": "src/Store.js~NodeStore#_data",
     "access": "private",
     "description": null,
     "lineNumber": 5,
     "undocument": true,
     "type": {
       "types": [
-        "*"
+        "{}"
       ]
     }
   },
   {
-    "__docId__": 85,
+    "__docId__": 94,
     "kind": "method",
     "name": "getItem",
-    "memberof": "src/Store.js~Store",
+    "memberof": "src/Store.js~NodeStore",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "src/Store.js~Store#getItem",
+    "longname": "src/Store.js~NodeStore#getItem",
     "access": "public",
     "description": null,
     "lineNumber": 8,
@@ -1686,14 +1895,190 @@
     }
   },
   {
-    "__docId__": 86,
+    "__docId__": 95,
     "kind": "method",
     "name": "setItem",
-    "memberof": "src/Store.js~Store",
+    "memberof": "src/Store.js~NodeStore",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "src/Store.js~Store#setItem",
+    "longname": "src/Store.js~NodeStore#setItem",
+    "access": "public",
+    "description": null,
+    "lineNumber": 16,
+    "undocument": true,
+    "params": [
+      {
+        "name": "name",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "value",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 96,
+    "kind": "method",
+    "name": "removeItem",
+    "memberof": "src/Store.js~NodeStore",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/Store.js~NodeStore#removeItem",
+    "access": "public",
+    "description": null,
+    "lineNumber": 24,
+    "undocument": true,
+    "params": [
+      {
+        "name": "name",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 97,
+    "kind": "file",
+    "name": "src/Store.web.js",
+    "content": "class Store {\n  constructor(prefix) {\n    this._prefix = prefix;\n  }\n\n  async getItem(name) {\n    const key = `${this._prefix}${name}`;\n    const raw = global.localStorage.getItem(key);\n    if (raw) {\n      return JSON.parse(raw);\n    }\n    return undefined;\n  }\n\n  async setItem(name, value) {\n    const key = `${this._prefix}${name}`;\n    global.localStorage.setItem(key, JSON.stringify(value));\n  }\n\n  async removeItem(name) {\n    const key = `${this._prefix}${name}`;\n    global.localStorage.removeItem(key);\n  }\n}\n\nexport default Store;\n",
+    "static": true,
+    "longname": "/Users/morten/Projects/sampension/auth-client/src/Store.web.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 98,
+    "kind": "function",
+    "name": "_asyncToGenerator",
+    "memberof": "src/Store.web.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "src/Store.web.js~_asyncToGenerator",
+    "access": "private",
+    "export": false,
+    "importPath": "authenticatornator/lib/Store.web.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "params": [
+      {
+        "name": "fn",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 99,
+    "kind": "class",
+    "name": "Store",
+    "memberof": "src/Store.web.js",
+    "static": true,
+    "longname": "src/Store.web.js~Store",
+    "access": "public",
+    "export": true,
+    "importPath": "authenticatornator/lib/Store.web.js",
+    "importStyle": "Store",
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "interface": false
+  },
+  {
+    "__docId__": 100,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "src/Store.web.js~Store",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/Store.web.js~Store#constructor",
+    "access": "public",
+    "description": null,
+    "lineNumber": 4,
+    "undocument": true
+  },
+  {
+    "__docId__": 101,
+    "kind": "member",
+    "name": "_prefix",
+    "memberof": "src/Store.web.js~Store",
+    "static": false,
+    "longname": "src/Store.web.js~Store#_prefix",
+    "access": "private",
+    "description": null,
+    "lineNumber": 5,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 102,
+    "kind": "method",
+    "name": "getItem",
+    "memberof": "src/Store.web.js~Store",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/Store.web.js~Store#getItem",
+    "access": "public",
+    "description": null,
+    "lineNumber": 8,
+    "undocument": true,
+    "params": [
+      {
+        "name": "name",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 103,
+    "kind": "method",
+    "name": "setItem",
+    "memberof": "src/Store.web.js~Store",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/Store.web.js~Store#setItem",
     "access": "public",
     "description": null,
     "lineNumber": 21,
@@ -1719,14 +2104,14 @@
     }
   },
   {
-    "__docId__": 87,
+    "__docId__": 104,
     "kind": "method",
     "name": "removeItem",
-    "memberof": "src/Store.js~Store",
+    "memberof": "src/Store.web.js~Store",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "src/Store.js~Store#removeItem",
+    "longname": "src/Store.web.js~Store#removeItem",
     "access": "public",
     "description": null,
     "lineNumber": 30,
@@ -1746,21 +2131,466 @@
     }
   },
   {
-    "__docId__": 88,
+    "__docId__": 105,
     "kind": "file",
-    "name": "src/filler.spec.js",
-    "content": "import './AuthClient';\n\ndescribe('fill', () => {\n  it('test', () => {\n\n  });\n});\n",
+    "name": "src/__mocks__/axios.js",
+    "content": "/** @ignore */\nclass Axios {\n  mocks = [];\n  extra = {};\n\n  clear() {\n    this.mocks = [];\n    this.extra = {};\n  }\n\n  setExtra(data) {\n    this.extra = {\n      ...this.extra,\n      ...data,\n    };\n  }\n\n  setMock(method, url, responseData) {\n    this.mocks.push({\n      url,\n      method,\n      responseData,\n    });\n  }\n\n  getMock(method, url, data) {\n    let reponseData;\n    const mock = this.mocks.find(m => m.url === url && m.method === method);\n    if (mock) {\n      reponseData = typeof mock.responseData === 'function' ? mock.responseData(data, this.extra) : mock.responseData;\n    }\n    return {\n      data: reponseData,\n    };\n  }\n\n  async get(url) {\n    return this.getMock('get', url);\n  }\n\n  async post(url, data) {\n    return this.getMock('post', url, data);\n  }\n}\n\nexport default new Axios();\n",
     "static": true,
-    "longname": "/Users/morten/Projects/sampension/auth-client/src/filler.spec.js",
+    "longname": "/Users/morten/Projects/sampension/auth-client/src/__mocks__/axios.js",
     "access": "public",
     "description": null,
     "lineNumber": 1
   },
   {
-    "__docId__": 89,
+    "__docId__": 106,
+    "kind": "variable",
+    "name": "_extends",
+    "memberof": "src/__mocks__/axios.js",
+    "static": true,
+    "longname": "src/__mocks__/axios.js~_extends",
+    "access": "private",
+    "export": false,
+    "importPath": "authenticatornator/lib/__mocks__/axios.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 107,
+    "kind": "function",
+    "name": "_asyncToGenerator",
+    "memberof": "src/__mocks__/axios.js",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "src/__mocks__/axios.js~_asyncToGenerator",
+    "access": "private",
+    "export": false,
+    "importPath": "authenticatornator/lib/__mocks__/axios.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "params": [
+      {
+        "name": "fn",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    },
+    "ignore": true
+  },
+  {
+    "__docId__": 108,
+    "kind": "class",
+    "name": "Axios",
+    "memberof": "src/__mocks__/axios.js",
+    "static": true,
+    "longname": "src/__mocks__/axios.js~Axios",
+    "access": "public",
+    "export": true,
+    "importPath": "authenticatornator/lib/__mocks__/axios.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 6,
+    "ignore": true,
+    "pseudoExport": true,
+    "interface": false
+  },
+  {
+    "__docId__": 109,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "src/__mocks__/axios.js~Axios",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/__mocks__/axios.js~Axios#constructor",
+    "access": "public",
+    "description": null,
+    "lineNumber": 7,
+    "undocument": true
+  },
+  {
+    "__docId__": 110,
+    "kind": "member",
+    "name": "mocks",
+    "memberof": "src/__mocks__/axios.js~Axios",
+    "static": false,
+    "longname": "src/__mocks__/axios.js~Axios#mocks",
+    "access": "public",
+    "description": null,
+    "lineNumber": 8,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*[]"
+      ]
+    }
+  },
+  {
+    "__docId__": 111,
+    "kind": "member",
+    "name": "extra",
+    "memberof": "src/__mocks__/axios.js~Axios",
+    "static": false,
+    "longname": "src/__mocks__/axios.js~Axios#extra",
+    "access": "public",
+    "description": null,
+    "lineNumber": 9,
+    "undocument": true,
+    "type": {
+      "types": [
+        "{}"
+      ]
+    }
+  },
+  {
+    "__docId__": 112,
+    "kind": "method",
+    "name": "clear",
+    "memberof": "src/__mocks__/axios.js~Axios",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/__mocks__/axios.js~Axios#clear",
+    "access": "public",
+    "description": null,
+    "lineNumber": 12,
+    "undocument": true,
+    "params": [],
+    "return": null
+  },
+  {
+    "__docId__": 115,
+    "kind": "method",
+    "name": "setExtra",
+    "memberof": "src/__mocks__/axios.js~Axios",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/__mocks__/axios.js~Axios#setExtra",
+    "access": "public",
+    "description": null,
+    "lineNumber": 17,
+    "undocument": true,
+    "params": [
+      {
+        "name": "data",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 117,
+    "kind": "method",
+    "name": "setMock",
+    "memberof": "src/__mocks__/axios.js~Axios",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/__mocks__/axios.js~Axios#setMock",
+    "access": "public",
+    "description": null,
+    "lineNumber": 21,
+    "undocument": true,
+    "params": [
+      {
+        "name": "method",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "url",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "responseData",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 118,
+    "kind": "method",
+    "name": "getMock",
+    "memberof": "src/__mocks__/axios.js~Axios",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/__mocks__/axios.js~Axios#getMock",
+    "access": "public",
+    "description": null,
+    "lineNumber": 29,
+    "undocument": true,
+    "params": [
+      {
+        "name": "method",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "url",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "data",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "{\"data\": *}"
+      ]
+    }
+  },
+  {
+    "__docId__": 119,
+    "kind": "method",
+    "name": "get",
+    "memberof": "src/__mocks__/axios.js~Axios",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/__mocks__/axios.js~Axios#get",
+    "access": "public",
+    "description": null,
+    "lineNumber": 40,
+    "undocument": true,
+    "params": [
+      {
+        "name": "url",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 120,
+    "kind": "method",
+    "name": "post",
+    "memberof": "src/__mocks__/axios.js~Axios",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/__mocks__/axios.js~Axios#post",
+    "access": "public",
+    "description": null,
+    "lineNumber": 48,
+    "undocument": true,
+    "params": [
+      {
+        "name": "url",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "data",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 121,
+    "kind": "variable",
+    "name": "axios",
+    "memberof": "src/__mocks__/axios.js",
+    "static": true,
+    "longname": "src/__mocks__/axios.js~axios",
+    "access": "public",
+    "export": true,
+    "importPath": "authenticatornator/lib/__mocks__/axios.js",
+    "importStyle": "axios",
+    "description": null,
+    "lineNumber": 57,
+    "undocument": true,
+    "type": {
+      "types": [
+        "src/__mocks__/axios.js~Axios"
+      ]
+    }
+  },
+  {
+    "__docId__": 122,
+    "kind": "file",
+    "name": "src/config.js",
+    "content": "/** @ignore */\nclass Config {\n  values = {};\n\n  set(name, value) {\n    this.values[name] = value;\n  }\n\n  get(name) {\n    return this.values[name];\n  }\n}\n\nexport default new Config();\n",
+    "static": true,
+    "longname": "/Users/morten/Projects/sampension/auth-client/src/config.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 123,
+    "kind": "class",
+    "name": "Config",
+    "memberof": "src/config.js",
+    "static": true,
+    "longname": "src/config.js~Config",
+    "access": "public",
+    "export": true,
+    "importPath": "authenticatornator/lib/config.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 2,
+    "ignore": true,
+    "pseudoExport": true,
+    "interface": false
+  },
+  {
+    "__docId__": 124,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "src/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/config.js~Config#constructor",
+    "access": "public",
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true
+  },
+  {
+    "__docId__": 125,
+    "kind": "member",
+    "name": "values",
+    "memberof": "src/config.js~Config",
+    "static": false,
+    "longname": "src/config.js~Config#values",
+    "access": "public",
+    "description": null,
+    "lineNumber": 4,
+    "undocument": true,
+    "type": {
+      "types": [
+        "{}"
+      ]
+    }
+  },
+  {
+    "__docId__": 126,
+    "kind": "method",
+    "name": "set",
+    "memberof": "src/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/config.js~Config#set",
+    "access": "public",
+    "description": null,
+    "lineNumber": 7,
+    "undocument": true,
+    "params": [
+      {
+        "name": "name",
+        "types": [
+          "*"
+        ]
+      },
+      {
+        "name": "value",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": null
+  },
+  {
+    "__docId__": 127,
+    "kind": "method",
+    "name": "get",
+    "memberof": "src/config.js~Config",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/config.js~Config#get",
+    "access": "public",
+    "description": null,
+    "lineNumber": 11,
+    "undocument": true,
+    "params": [
+      {
+        "name": "name",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 128,
+    "kind": "variable",
+    "name": "config",
+    "memberof": "src/config.js",
+    "static": true,
+    "longname": "src/config.js~config",
+    "access": "public",
+    "export": true,
+    "importPath": "authenticatornator/lib/config.js",
+    "importStyle": "config",
+    "description": null,
+    "lineNumber": 16,
+    "undocument": true,
+    "type": {
+      "types": [
+        "src/config.js~Config"
+      ]
+    }
+  },
+  {
+    "__docId__": 129,
     "kind": "file",
     "name": "src/index.js",
-    "content": "import AuthClient from 'AuthClient';\n\nmodule.exports = AuthClient;\n",
+    "content": "import AuthClient from 'AuthClient';\nimport config from 'config';\nimport Store from 'Store';\nimport Crypto from 'Crypto';\n\nconfig.set('createStore', () => new Store());\nconfig.set('createCrypto', () => new Crypto());\n\nmodule.exports = AuthClient;\n",
     "static": true,
     "longname": "/Users/morten/Projects/sampension/auth-client/src/index.js",
     "access": "public",
@@ -1768,7 +2598,18 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 90,
+    "__docId__": 130,
+    "kind": "file",
+    "name": "src/index.web.js",
+    "content": "import AuthClient from 'AuthClient';\nimport config from 'config';\nimport Store from 'Store.web';\nimport Crypto from 'Crypto.web';\n\nconfig.set('createStore', () => new Store());\nconfig.set('createCrypto', () => new Crypto());\n\nmodule.exports = AuthClient;\n",
+    "static": true,
+    "longname": "/Users/morten/Projects/sampension/auth-client/src/index.web.js",
+    "access": "public",
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 131,
     "kind": "file",
     "name": "src/utils.js",
     "content": "/** @ignore */\nexport const base64URLEncode = value =>\n  value.toString('base64').replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=/g, '');\n",
@@ -1779,7 +2620,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 91,
+    "__docId__": 132,
     "kind": "function",
     "name": "base64URLEncode",
     "memberof": "src/utils.js",
@@ -1806,7 +2647,7 @@
   },
   {
     "kind": "index",
-    "content": "# Authenticatornator\n\n[![Coverage Status](https://coveralls.io/repos/github/morten-olsen/authclient/badge.svg?branch=master)](https://coveralls.io/github/morten-olsen/authclient?branch=master) [![Build Status](https://www.travis-ci.org/morten-olsen/authclient.svg?branch=master)](https://www.travis-ci.org/morten-olsen/authclient) \n[![npm](https://img.shields.io/npm/dm/authenticatornator.svg)](https://www.npmjs.com/package/authenticatornator) \n[![npm](https://img.shields.io/npm/v/authenticatornator.svg)](https://www.npmjs.com/package/authenticatornator) [![Maintainability](https://api.codeclimate.com/v1/badges/7d192fd20aeadfc34bc7/maintainability)](https://codeclimate.com/github/morten-olsen/authclient/maintainability) [![Known Vulnerabilities](https://snyk.io/test/github/morten-olsen/authclient/badge.svg?targetFile=package.json)](https://snyk.io/test/github/morten-olsen/authclient?targetFile=package.json) ![eslint](https://img.shields.io/badge/eslint-airbnb-red.svg)\n\n\n* [Demo](https://morten-olsen.github.io/authclient/demo)\n* [Documentation](https://morten-olsen.github.io/authclient/)\n\n## Usage\n\n### Creating a client\n\n```javascript\nimport AuthClient from 'authenticatornator';\n\nconst authClient = new AuthClient({\n    baseUrl: 'https://your-server',\n    clientId: 'ClientId',\n    redirectUri: `${global.location.protocol}//${global.location.host}`,\n    responseTypes: ['id_token', 'token'],\n    scopes: [\n      'openid',\n      'profile',\n    ],\n  });\n```\n\n### Creating a login url\n\nA login url is obtained by calling `const url = await authClient.getLoginUrl();`. This url should then be presented to the user `window.location.href = url;`, or what is best suited for the platform that you are working on\n\n### Getting the token\n\nOnce the user has logged into the login page, they should be redirected to the `redirect_uri` with some additional information which can then be used to get the token. To exchange these informations, simply call `const token = await authClient.exchangeToken(window.location.href);`\n\nIf jusing password grant, you can simply use `const token = await authClient.getToken({ username: 'admin', password: 'god'});` or to renew a token using a refresh token `const token = await authClient.getToken({refreshToken: '...'});`\n\n## Minimal example\n\n```html\n<html>\n  <body>\n    <div></div>\n    <button>Login</button>\n    <script>\n      const boot = async () => {\n        const authClient = new AuthClient({\n          baseUrl: 'https://your-server',\n          clientId: 'ClientId',\n          redirectUri: `${global.location.protocol}//${global.location.host}`,\n          responseTypes: ['id_token', 'token'],\n          scopes: [\n            'openid',\n            'profile',\n          ],\n        });\n        const button = document.querySelector('button');\n        const view = document.querySelector('div');\n        button.onClick = async () => {\n          window.location.href = await authClient.getLoginUrl();\n        }\n        if (location.hash) {\n          const token = await authClient.exchangeToken(window.location.href);\n          view.innerHTML = JSON.stringify(token, null, '  ');\n        }\n      };\n      boot();\n    </script>\n  </body>\n</html>\n```",
+    "content": "# Authenticatornator\n\n[![Greenkeeper badge](https://badges.greenkeeper.io/morten-olsen/authclient.svg)](https://greenkeeper.io/) [![Coverage Status](https://coveralls.io/repos/github/morten-olsen/authclient/badge.svg?branch=master)](https://coveralls.io/github/morten-olsen/authclient?branch=master) [![Build Status](https://www.travis-ci.org/morten-olsen/authclient.svg?branch=master)](https://www.travis-ci.org/morten-olsen/authclient) \n[![npm](https://img.shields.io/npm/dm/authenticatornator.svg)](https://www.npmjs.com/package/authenticatornator) \n[![npm](https://img.shields.io/npm/v/authenticatornator.svg)](https://www.npmjs.com/package/authenticatornator) [![Maintainability](https://api.codeclimate.com/v1/badges/7d192fd20aeadfc34bc7/maintainability)](https://codeclimate.com/github/morten-olsen/authclient/maintainability) [![Known Vulnerabilities](https://snyk.io/test/github/morten-olsen/authclient/badge.svg?targetFile=package.json)](https://snyk.io/test/github/morten-olsen/authclient?targetFile=package.json) ![eslint](https://img.shields.io/badge/eslint-airbnb-red.svg)\n\n\n* [Demo](https://morten-olsen.github.io/authclient/demo)\n* [Documentation](https://morten-olsen.github.io/authclient/)\n\n## Usage\n\n### Creating a client\n\n```javascript\nimport AuthClient from 'authenticatornator';\n\nconst authClient = new AuthClient({\n    baseUrl: 'https://your-server',\n    clientId: 'ClientId',\n    redirectUri: `${global.location.protocol}//${global.location.host}`,\n    responseTypes: ['id_token', 'token'],\n    scopes: [\n      'openid',\n      'profile',\n    ],\n  });\n```\n\n### Creating a login url\n\nA login url is obtained by calling `const url = await authClient.getLoginUrl();`. This url should then be presented to the user `window.location.href = url;`, or what is best suited for the platform that you are working on\n\n### Getting the token\n\nOnce the user has logged into the login page, they should be redirected to the `redirect_uri` with some additional information which can then be used to get the token. To exchange these informations, simply call `const token = await authClient.exchangeToken(window.location.href);`\n\nIf jusing password grant, you can simply use `const token = await authClient.getToken({ username: 'admin', password: 'god'});` or to renew a token using a refresh token `const token = await authClient.getToken({refreshToken: '...'});`\n\n## Minimal example\n\n```html\n<html>\n  <body>\n    <div></div>\n    <button>Login</button>\n    <script>\n      const boot = async () => {\n        const authClient = new AuthClient({\n          baseUrl: 'https://your-server',\n          clientId: 'ClientId',\n          redirectUri: `${global.location.protocol}//${global.location.host}`,\n          responseTypes: ['id_token', 'token'],\n          scopes: [\n            'openid',\n            'profile',\n          ],\n        });\n        const button = document.querySelector('button');\n        const view = document.querySelector('div');\n        button.onClick = async () => {\n          window.location.href = await authClient.getLoginUrl();\n        }\n        if (location.hash) {\n          const token = await authClient.exchangeToken(window.location.href);\n          view.innerHTML = JSON.stringify(token, null, '  ');\n        }\n      };\n      boot();\n    </script>\n  </body>\n</html>\n```\n",
     "longname": "/Users/morten/Projects/sampension/auth-client/README.md",
     "name": "./README.md",
     "static": true,
@@ -1814,47 +2655,216 @@
   },
   {
     "kind": "packageJSON",
-    "content": "{\n  \"name\": \"authenticatornator\",\n  \"version\": \"0.0.0-development\",\n  \"main\": \"lib/index.js\",\n  \"src\": \"src/index.js\",\n  \"license\": \"MIT\",\n  \"scripts\": {\n    \"demo\": \"parcel -p 3000 -d docs/demo --public-url \\\"/authclient/demo/\\\" demo/index.html\",\n    \"test:lint\": \"eslint src\",\n    \"test:jest\": \"jest\",\n    \"test\": \"npm run test:lint && npm run test:jest\",\n    \"build\": \"babel src -d lib -s\",\n    \"build:docs\": \"esdoc\",\n    \"bundle\": \"webpack\",\n    \"prepare\": \"npm run build && npm run bundle\",\n    \"publish:docs\": \"npm run build:docs && gh-pages -d docs\",\n    \"semantic-release\": \"semantic-release\",\n    \"coverage\": \"npm run test:jest && cat ./coverage/lcov.info | coveralls\",\n    \"travis-deploy-once\": \"travis-deploy-once\"\n  },\n  \"devDependencies\": {\n    \"babel-cli\": \"^6.26.0\",\n    \"babel-core\": \"^6.26.0\",\n    \"babel-eslint\": \"^8.2.1\",\n    \"babel-loader\": \"^7.1.2\",\n    \"babel-plugin-module-resolver\": \"^3.0.0\",\n    \"babel-plugin-transform-flow-strip-types\": \"^6.22.0\",\n    \"babel-plugin-transform-private\": \"^0.1.3\",\n    \"babel-preset-env\": \"^1.6.1\",\n    \"babel-preset-stage-1\": \"^6.24.1\",\n    \"coveralls\": \"^3.0.0\",\n    \"esdoc\": \"^1.0.4\",\n    \"esdoc-babel-plugin\": \"^1.0.1\",\n    \"esdoc-brand-plugin\": \"^1.0.0\",\n    \"esdoc-custom-theme\": \"^1.4.2\",\n    \"esdoc-ecmascript-proposal-plugin\": \"^1.0.0\",\n    \"esdoc-importpath-plugin\": \"^1.0.1\",\n    \"esdoc-publish-html-plugin\": \"^1.1.0\",\n    \"esdoc-standard-plugin\": \"^1.0.0\",\n    \"eslint\": \"^4.16.0\",\n    \"eslint-config-airbnb\": \"^16.1.0\",\n    \"eslint-import-resolver-babel-module\": \"^4.0.0\",\n    \"eslint-plugin-flowtype\": \"^2.42.0\",\n    \"eslint-plugin-import\": \"^2.8.0\",\n    \"eslint-plugin-jsx-a11y\": \"^6.0.3\",\n    \"eslint-plugin-react\": \"^7.6.0\",\n    \"gh-pages\": \"^1.1.0 \",\n    \"husky\": \"^0.14.3\",\n    \"jest\": \"^22.1.4\",\n    \"parcel-bundler\": \"^1.6.2\",\n    \"semantic-release\": \"^15.0.3\",\n    \"semantic-release-cli\": \"^3.6.4\",\n    \"travis-deploy-once\": \"^4.4.0\",\n    \"uglifyjs-webpack-plugin\": \"^1.2.3\",\n    \"webpack\": \"^3.10.0\"\n  },\n  \"jest\": {\n    \"coverageDirectory\": \"./coverage\",\n    \"coverageReporters\": [\n      \"json\",\n      \"lcov\",\n      \"text\",\n      \"html\"\n    ],\n    \"collectCoverage\": true,\n    \"roots\": [\n      \"./src\"\n    ],\n    \"testMatch\": [\n      \"**/?(*.)(spec|test).js?(x)\"\n    ]\n  },\n  \"dependencies\": {\n    \"axios\": \"^0.18.0\"\n  },\n  \"release\": {\n    \"branch\": \"master\"\n  },\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/morten-olsen/authclient.git\"\n  }\n}\n",
+    "content": "{\n  \"name\": \"authenticatornator\",\n  \"version\": \"0.0.0-development\",\n  \"main\": \"lib/index.js\",\n  \"browser\": \"lib/index.web.js\",\n  \"src\": \"src/index.web.js\",\n  \"license\": \"MIT\",\n  \"scripts\": {\n    \"demo\": \"parcel -p 3000 -d docs/demo --public-url \\\"/authclient/demo/\\\" demo/index.html\",\n    \"test:lint\": \"eslint src\",\n    \"test:jest\": \"jest\",\n    \"test\": \"npm run test:lint && npm run test:jest\",\n    \"build\": \"babel src -d lib -s\",\n    \"build:docs\": \"esdoc\",\n    \"bundle\": \"webpack\",\n    \"prepare\": \"npm run build && npm run bundle\",\n    \"publish:docs\": \"npm run build:docs && gh-pages -d docs\",\n    \"semantic-release\": \"semantic-release\",\n    \"coverage\": \"npm run test:jest && cat ./coverage/lcov.info | coveralls\",\n    \"travis-deploy-once\": \"travis-deploy-once\"\n  },\n  \"devDependencies\": {\n    \"babel-cli\": \"^6.26.0\",\n    \"babel-core\": \"^6.26.0\",\n    \"babel-eslint\": \"^8.2.1\",\n    \"babel-loader\": \"^7.1.2\",\n    \"babel-plugin-module-resolver\": \"^3.0.0\",\n    \"babel-plugin-transform-flow-strip-types\": \"^6.22.0\",\n    \"babel-plugin-transform-private\": \"^0.1.3\",\n    \"babel-preset-env\": \"^1.6.1\",\n    \"babel-preset-stage-1\": \"^6.24.1\",\n    \"coveralls\": \"^3.0.0\",\n    \"esdoc\": \"^1.0.4\",\n    \"esdoc-babel-plugin\": \"^1.0.1\",\n    \"esdoc-brand-plugin\": \"^1.0.0\",\n    \"esdoc-custom-theme\": \"^1.4.2\",\n    \"esdoc-ecmascript-proposal-plugin\": \"^1.0.0\",\n    \"esdoc-importpath-plugin\": \"^1.0.1\",\n    \"esdoc-publish-html-plugin\": \"^1.1.0\",\n    \"esdoc-standard-plugin\": \"^1.0.0\",\n    \"eslint\": \"^4.16.0\",\n    \"eslint-config-airbnb\": \"^16.1.0\",\n    \"eslint-import-resolver-babel-module\": \"^4.0.0\",\n    \"eslint-plugin-flowtype\": \"^2.42.0\",\n    \"eslint-plugin-import\": \"^2.8.0\",\n    \"eslint-plugin-jsx-a11y\": \"^6.0.3\",\n    \"eslint-plugin-react\": \"^7.6.0\",\n    \"gh-pages\": \"^1.1.0 \",\n    \"husky\": \"^0.14.3\",\n    \"jest\": \"^22.1.4\",\n    \"parcel-bundler\": \"^1.6.2\",\n    \"semantic-release\": \"^15.0.3\",\n    \"semantic-release-cli\": \"^3.6.4\",\n    \"travis-deploy-once\": \"^4.4.0\",\n    \"uglifyjs-webpack-plugin\": \"^1.2.3\",\n    \"webpack\": \"^4.1.1\",\n    \"webpack-cli\": \"^2.0.11\"\n  },\n  \"jest\": {\n    \"coverageDirectory\": \"./coverage\",\n    \"coverageReporters\": [\n      \"json\",\n      \"lcov\",\n      \"text\",\n      \"html\"\n    ],\n    \"collectCoverage\": true,\n    \"roots\": [\n      \"./src\"\n    ],\n    \"testMatch\": [\n      \"**/?(*.)(spec|test).js?(x)\"\n    ]\n  },\n  \"dependencies\": {\n    \"axios\": \"^0.18.0\"\n  },\n  \"release\": {\n    \"branch\": \"master\"\n  },\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/morten-olsen/authclient.git\"\n  }\n}\n",
     "longname": "/Users/morten/Projects/sampension/auth-client/package.json",
     "name": "package.json",
     "static": true,
     "access": "public"
   },
   {
-    "__docId__": 92,
+    "__docId__": 133,
     "kind": "testFile",
-    "name": "src/filler.spec.js",
-    "content": "import './AuthClient';\n\ndescribe('fill', () => {\n  it('test', () => {\n\n  });\n});\n",
+    "name": "src/AuthClient.spec.js",
+    "content": "import url from 'url';\nimport axios from 'axios';\nimport querystring from 'querystring';\nimport AuthClient from './AuthClient';\nimport Crypto from './Crypto.node';\nimport Store from './Store.node';\nimport config from '../demo/config';\n\njest.mock('axios');\n\ndescribe('AuthClient', () => {\n  beforeEach(() => {\n    axios.clear();\n    axios.setMock('get', 'https://authclient-demo.eu.auth0.com/.well-known/openid-configuration', {\n      authorization_endpoint: 'https://authclient-demo.eu.auth0.com/authorize',\n      token_endpoint: 'https://authclient-demo.eu.auth0.com/token',\n    });\n    axios.setMock('post', 'https://authclient-demo.eu.auth0.com/token', (data, extra) => extra.tokenAssert(data));\n  });\n\n  describe('implicit grant', () => {\n    describe('url generator', () => {\n      it('without crypto', async () => {\n        const client = new AuthClient(config.implicit);\n        const result = await client.getLoginUrl();\n        const parsed = url.parse(result);\n        const query = querystring.parse(parsed.query);\n        expect(parsed.host).toBe('authclient-demo.eu.auth0.com');\n        expect(query.client_id).toBe(config.implicit.clientId);\n        expect(query.code_challenge).toBeUndefined();\n        expect(query.code_challenge_method).toBeUndefined();\n        expect(query.redirect_uri).toBe('about://blank');\n        expect(query.response_type).toBe('id_token token');\n        expect(query.scope).toBe('openid profile');\n        expect(query.state).toBeUndefined();\n      });\n\n      it('with crypto', async () => {\n        const client = new AuthClient({\n          ...config.implicit,\n          crypto: new Crypto(),\n        });\n        const result = await client.getLoginUrl();\n        const parsed = url.parse(result);\n        const query = querystring.parse(parsed.query);\n        expect(parsed.host).toBe('authclient-demo.eu.auth0.com');\n        expect(query.client_id).toBe(config.implicit.clientId);\n        expect(query.code_challenge).toBeDefined();\n        expect(query.code_challenge_method).toBe('S256');\n        expect(query.redirect_uri).toBe('about://blank');\n        expect(query.response_type).toBe('id_token token');\n        expect(query.scope).toBe('openid profile');\n        expect(query.state).toBeDefined();\n      });\n    });\n\n\n    describe('token exchange', () => {\n      it('with query parameter', async () => {\n        const client = new AuthClient(config.implicit);\n        const token = await client.exchangeToken('https://localhost?access_token=test');\n        expect(token.access_token).toBe('test');\n      });\n\n      it('with hash', async () => {\n        const client = new AuthClient(config.implicit);\n        const token = await client.exchangeToken('https://localhost#access_token=test');\n        expect(token.access_token).toBe('test');\n      });\n    });\n  });\n\n  describe('authentication code grant', () => {\n    describe('url generator', () => {\n      it('without crypto', async () => {\n        const client = new AuthClient(config.authCode);\n        const result = await client.getLoginUrl();\n        const parsed = url.parse(result);\n        const query = querystring.parse(parsed.query);\n        expect(parsed.host).toBe('authclient-demo.eu.auth0.com');\n        expect(query.client_id).toBe(config.authCode.clientId);\n        expect(query.code_challenge).toBeUndefined();\n        expect(query.code_challenge_method).toBeUndefined();\n        expect(query.redirect_uri).toBe('about://blank');\n        expect(query.response_type).toBe('code');\n        expect(query.scope).toBe('openid profile');\n        expect(query.state).toBeUndefined();\n      });\n\n      it('with crypto', async () => {\n        const client = new AuthClient({\n          ...config.authCode,\n          crypto: new Crypto(),\n        });\n        const result = await client.getLoginUrl();\n        const parsed = url.parse(result);\n        const query = querystring.parse(parsed.query);\n        expect(parsed.host).toBe('authclient-demo.eu.auth0.com');\n        expect(query.client_id).toBe(config.authCode.clientId);\n        expect(query.code_challenge).toBeDefined();\n        expect(query.code_challenge_method).toBe('S256');\n        expect(query.redirect_uri).toBe('about://blank');\n        expect(query.response_type).toBe('code');\n        expect(query.scope).toBe('openid profile');\n        expect(query.state).toBeDefined();\n      });\n    });\n\n    describe('token exchange', () => {\n      it('without crypto', async () => {\n        const client = new AuthClient(config.authCode);\n        axios.setExtra({\n          tokenAssert: (data) => {\n            expect(data.client_id).toBe(config.authCode.clientId);\n            expect(data.client_secret).toBe(config.authCode.clientSecret);\n            expect(data.redirect_uri).toBe('about://blank');\n            expect(data.grant_type).toBe('authorization_code');\n            expect(data.username).toBeUndefined();\n            expect(data.password).toBeUndefined();\n            expect(data.code).toBe('test');\n            expect(data.scope).toBe('openid profile');\n            expect(data.refresh_token).toBeUndefined();\n            expect(data.code_verifier).toBeUndefined();\n            return {\n              access_token: 'test2',\n            };\n          },\n        });\n        const token = await client.exchangeToken('https://localhost?code=test');\n        expect(token.access_token).toBe('test2');\n      });\n\n      it('with crypto', async () => {\n        const store = new Store();\n        const crypto = new Crypto();\n        const client = new AuthClient({\n          ...config.authCode,\n          crypto,\n          store,\n        });\n        const result = await client.getLoginUrl();\n        const parsed = url.parse(result);\n        const query = querystring.parse(parsed.query);\n        expect(query.state).toBeDefined();\n        axios.setExtra({\n          tokenAssert: async (data) => {\n            expect(data.client_id).toBe(config.authCode.clientId);\n            expect(data.client_secret).toBe(config.authCode.clientSecret);\n            expect(data.redirect_uri).toBe('about://blank');\n            expect(data.grant_type).toBe('authorization_code');\n            expect(data.username).toBeUndefined();\n            expect(data.password).toBeUndefined();\n            expect(data.code).toBe('test');\n            expect(data.scope).toBe('openid profile');\n            expect(data.refresh_token).toBeUndefined();\n            expect(data.code_verifier).toBeDefined();\n            const challenge = query.code_challenge;\n            expect(crypto.bytesToBase64(await crypto.sha256(data.code_verifier))).toBe(challenge);\n            expect(challenge).toBeDefined();\n            return {\n              access_token: 'test2',\n            };\n          },\n        });\n        const token = await client.exchangeToken(`https://localhost?code=test&state=${query.state}`);\n        expect(token.access_token).toBe('test2');\n      });\n    });\n  });\n});\n",
     "static": true,
-    "longname": "/Users/morten/Projects/sampension/auth-client/src/filler.spec.js",
+    "longname": "/Users/morten/Projects/sampension/auth-client/src/AuthClient.spec.js",
     "access": null,
     "description": null,
     "lineNumber": 1
   },
   {
-    "__docId__": 93,
+    "__docId__": 134,
     "kind": "test",
     "name": "describe0",
     "testId": 0,
-    "memberof": "src/filler.spec.js",
+    "memberof": "src/AuthClient.spec.js",
     "testDepth": 0,
     "static": true,
-    "longname": "src/filler.spec.js~describe0",
+    "longname": "src/AuthClient.spec.js~describe0",
     "access": null,
-    "description": "fill",
-    "lineNumber": 3
+    "description": "AuthClient",
+    "lineNumber": 15
   },
   {
-    "__docId__": 94,
+    "__docId__": 135,
     "kind": "test",
-    "name": "it1",
+    "name": "describe1",
     "testId": 1,
-    "memberof": "src/filler.spec.js~describe0",
+    "memberof": "src/AuthClient.spec.js~describe0",
     "testDepth": 1,
     "static": true,
-    "longname": "src/filler.spec.js~describe0.it1",
+    "longname": "src/AuthClient.spec.js~describe0.describe1",
     "access": null,
-    "description": "test",
-    "lineNumber": 4
+    "description": "implicit grant",
+    "lineNumber": 25
+  },
+  {
+    "__docId__": 136,
+    "kind": "test",
+    "name": "describe2",
+    "testId": 2,
+    "memberof": "src/AuthClient.spec.js~describe0.describe1",
+    "testDepth": 2,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~describe0.describe1.describe2",
+    "access": null,
+    "description": "url generator",
+    "lineNumber": 26
+  },
+  {
+    "__docId__": 137,
+    "kind": "test",
+    "name": "it3",
+    "testId": 3,
+    "memberof": "src/AuthClient.spec.js~describe0.describe1.describe2",
+    "testDepth": 3,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~describe0.describe1.describe2.it3",
+    "access": null,
+    "description": "without crypto",
+    "lineNumber": 27
+  },
+  {
+    "__docId__": 138,
+    "kind": "test",
+    "name": "it4",
+    "testId": 4,
+    "memberof": "src/AuthClient.spec.js~describe0.describe1.describe2",
+    "testDepth": 3,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~describe0.describe1.describe2.it4",
+    "access": null,
+    "description": "with crypto",
+    "lineNumber": 42
+  },
+  {
+    "__docId__": 139,
+    "kind": "test",
+    "name": "describe5",
+    "testId": 5,
+    "memberof": "src/AuthClient.spec.js~describe0.describe1",
+    "testDepth": 2,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~describe0.describe1.describe5",
+    "access": null,
+    "description": "token exchange",
+    "lineNumber": 60
+  },
+  {
+    "__docId__": 140,
+    "kind": "test",
+    "name": "it6",
+    "testId": 6,
+    "memberof": "src/AuthClient.spec.js~describe0.describe1.describe5",
+    "testDepth": 3,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~describe0.describe1.describe5.it6",
+    "access": null,
+    "description": "with query parameter",
+    "lineNumber": 61
+  },
+  {
+    "__docId__": 141,
+    "kind": "test",
+    "name": "it7",
+    "testId": 7,
+    "memberof": "src/AuthClient.spec.js~describe0.describe1.describe5",
+    "testDepth": 3,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~describe0.describe1.describe5.it7",
+    "access": null,
+    "description": "with hash",
+    "lineNumber": 67
+  },
+  {
+    "__docId__": 142,
+    "kind": "test",
+    "name": "describe8",
+    "testId": 8,
+    "memberof": "src/AuthClient.spec.js~describe0",
+    "testDepth": 1,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~describe0.describe8",
+    "access": null,
+    "description": "authentication code grant",
+    "lineNumber": 75
+  },
+  {
+    "__docId__": 143,
+    "kind": "test",
+    "name": "describe9",
+    "testId": 9,
+    "memberof": "src/AuthClient.spec.js~describe0.describe8",
+    "testDepth": 2,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~describe0.describe8.describe9",
+    "access": null,
+    "description": "url generator",
+    "lineNumber": 76
+  },
+  {
+    "__docId__": 144,
+    "kind": "test",
+    "name": "it10",
+    "testId": 10,
+    "memberof": "src/AuthClient.spec.js~describe0.describe8.describe9",
+    "testDepth": 3,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~describe0.describe8.describe9.it10",
+    "access": null,
+    "description": "without crypto",
+    "lineNumber": 77
+  },
+  {
+    "__docId__": 145,
+    "kind": "test",
+    "name": "it11",
+    "testId": 11,
+    "memberof": "src/AuthClient.spec.js~describe0.describe8.describe9",
+    "testDepth": 3,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~describe0.describe8.describe9.it11",
+    "access": null,
+    "description": "with crypto",
+    "lineNumber": 92
+  },
+  {
+    "__docId__": 146,
+    "kind": "test",
+    "name": "describe12",
+    "testId": 12,
+    "memberof": "src/AuthClient.spec.js~describe0.describe8",
+    "testDepth": 2,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~describe0.describe8.describe12",
+    "access": null,
+    "description": "token exchange",
+    "lineNumber": 110
+  },
+  {
+    "__docId__": 147,
+    "kind": "test",
+    "name": "it13",
+    "testId": 13,
+    "memberof": "src/AuthClient.spec.js~describe0.describe8.describe12",
+    "testDepth": 3,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~describe0.describe8.describe12.it13",
+    "access": null,
+    "description": "without crypto",
+    "lineNumber": 111
+  },
+  {
+    "__docId__": 148,
+    "kind": "test",
+    "name": "it14",
+    "testId": 14,
+    "memberof": "src/AuthClient.spec.js~describe0.describe8.describe12",
+    "testDepth": 3,
+    "static": true,
+    "longname": "src/AuthClient.spec.js~describe0.describe8.describe12.it14",
+    "access": null,
+    "description": "with crypto",
+    "lineNumber": 134
   }
 ]

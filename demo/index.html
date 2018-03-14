@@ -1,8 +1,95 @@
+<!doctype>
 <html>
+  <head>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 15px;
+      }
+      #wrapper {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+        height: 100%;
+      }
+      #main, #passwordBox {
+        display: flex;
+        align-items: flex-end;
+      }
+      button {
+        background: #40407a;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 15px;
+        outline: none;
+        box-shadow: 
+          0 6px 0 #2c2c54,
+          0 6px 5px rgba(0, 0, 0, 1);
+        margin-right: 5px;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+      input {
+        border: none;
+        outline: none;
+        background: #d1ccc0;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin-bottom: -6px;
+        margin-right: 5px;
+        border-bottom: solid 1px #aaa;
+        color: #000;
+        font-weight: bold;
+        box-shadow:
+          0 5px 5px rgba(0,0,0,.2) inset;
+      }
+      button:hover {
+        margin-top: 2px;
+        margin-bottom: -2px;
+        box-shadow: 
+          0 4px 0 #2c2c54,
+          0 4px 5px rgba(0, 0, 0, 1);
+      }
+      button:active {
+        margin-bottom: -5px;
+        box-shadow: 
+          0 1px 0 #2c2c54,
+          0 1px 5px rgba(0, 0, 0, 1);
+      }
+      #token {
+        max-width: 600px;
+        width: 100%;
+      }
+      pre {
+        background: #222;
+        color: #fff;
+        white-space: pre-wrap;
+        padding: 15px;
+        border-radius: 5px;
+        word-break: break-all;
+      }
+    </style>
+  </head>
   <body>
-    <div id="main">
-      <button id="implicit">Implicit</button>
-      <button id="authcode">Authenticaton Code + PKCE</button>
+    <div id="wrapper">
+      <div id="main">
+        <button id="implicit">Implicit</button>
+        <button id="authcode">Authenticaton Code + PKCE</button>
+        <button id="password">Password</button>
+      </div>
+      <div id="passwordBox" style="display: none">
+        <input placeholder="Username" id="usernametxt" />
+        <input placeholder="Password" type="password" id="passwordtxt" />
+        <button id="passwordLogin">Login</button>
+      </div>
+      <pre id="token" style="display: none;">
+  <code></code>
+      </pre>
     </div>
     <script src="./index.js"></script>
   </body>

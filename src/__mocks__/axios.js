@@ -1,3 +1,4 @@
+/** @ignore */
 class Axios {
   mocks = [];
   extra = {};

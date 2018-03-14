@@ -30,68 +30,42 @@
   <ul>
     
   <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/AuthClient.js~AuthClient.html">AuthClient</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Crypto.js~Crypto.html">Crypto</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Store.js~Store.html">Store</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Crypto.js~NodeCrypto.html">NodeCrypto</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Crypto.web.js~Crypto.html">Crypto</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Store.js~NodeStore.html">NodeStore</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/Store.web.js~Store.html">Store</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-config">config</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Options">Options</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ResponseTypes">ResponseTypes</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TokenResponse">TokenResponse</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-TokenTypes">TokenTypes</a></span></span></li>
+<li data-ice="doc"><a data-ice="dirPath" class="nav-dir-path" href="identifiers.html#--mocks--">__mocks__</a><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-axios">axios</a></span></span></li>
 </ul>
 </div>
 </nav>
 
 <div class="content" data-ice="content"><h1 data-ice="title">src/Crypto.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">const CHARSET = &apos;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&apos;;
-const HAS_CRYPTO = typeof window !== &apos;undefined&apos; &amp;&amp; !!global.crypto;
-const encoder = global.TextEncoder ? new global.TextEncoder(&apos;utf-8&apos;) : undefined;
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import crypto from &apos;crypto&apos;;
 
-/** @ignore */
-const arrayBufferToBase64 = (buffer) =&gt; {
-  let binary = &apos;&apos;;
-  const bytes = new global.Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i &lt; len; i += 1) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return global.btoa(binary).replace(/\+/g, &apos;-&apos;).replace(/\//g, &apos;_&apos;).replace(/=/g, &apos;&apos;);
-};
+function base64URLEncode(str) {
+  return str.toString(&apos;base64&apos;).replace(/\+/g, &apos;-&apos;).replace(/\//g, &apos;_&apos;).replace(/=/g, &apos;&apos;);
+}
 
-/** @ignore */
-export const bufferToString = (buffer) =&gt; {
-  const state = [];
-  for (let i = 0; i &lt; buffer.byteLength; i += 1) {
-    const index = (buffer[i] % CHARSET.length) | 0; // eslint-disable-line no-bitwise
-    state.push(CHARSET[index]);
-  }
-  return state.join(&apos;&apos;).replace(/\+/g, &apos;-&apos;).replace(/\//g, &apos;_&apos;).replace(/=/g, &apos;&apos;);
-};
-
-class Crypto {
+class NodeCrypto {
   async sha256(value) {
-    const encoded = encoder.encode(value);
-    const hashed = await global.crypto.subtle.digest(&apos;SHA-256&apos;, encoded);
-    return hashed;
+    return crypto.createHash(&apos;sha256&apos;).update(value).digest();
   }
 
   bytesToBase64(value) {
-    return arrayBufferToBase64(value);
+    return base64URLEncode(value);
   }
 
   random(sizeInBytes = 32) {
-    const buffer = new Uint8Array(sizeInBytes);
-    if (HAS_CRYPTO) {
-      global.crypto.getRandomValues(buffer);
-    } else {
-      // fall back to Math.random() if nothing else is available
-      for (let i = 0; i &lt; sizeInBytes; i += 1) {
-        buffer[i] = Math.random();
-      }
-    }
-    return bufferToString(buffer);
+    return base64URLEncode(crypto.randomBytes(sizeInBytes));
   }
 }
 
-export default Crypto;
+export default NodeCrypto;
 </code></pre>
 
 </div>

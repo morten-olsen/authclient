@@ -1,4 +1,5 @@
 import axios from 'axios';
+import configManager from 'config';
 
 const defaultOptions = {
   tokenType: 'authorization_code',
@@ -64,6 +65,12 @@ class AuthClient {
     /** @ignore */
     this._options = {
       ...defaultOptions,
+      store: configManager.get('createStore')
+        ? configManager.get('createStore')()
+        : undefined,
+      crypto: configManager.get('createCrypto')
+        ? configManager.get('createCrypto')()
+        : undefined,
       ...options,
     };
   }
@@ -156,7 +163,7 @@ class AuthClient {
       client_id: clientId,
       client_secret: clientSecret,
       redirect_uri: redirectUri,
-      grant_type: tokenType,
+      grant_type: password ? 'password' : tokenType,
       username,
       password,
       code,
@@ -255,7 +262,7 @@ class AuthClient {
     const extendedOptions = {
       ...this._options,
       scopes: undefined,
-      options,
+      ...options,
     };
     const config = await this._getConfiguration(extendedOptions);
     const response = await this._requestToken(extendedOptions, config);

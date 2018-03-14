@@ -2,7 +2,8 @@
   "name": "authenticatornator",
   "version": "0.0.0-development",
   "main": "lib/index.js",
-  "src": "src/index.js",
+  "browser": "lib/index.web.js",
+  "src": "src/index.web.js",
   "license": "MIT",
   "scripts": {
     "demo": "parcel -p 3000 -d docs/demo --public-url \"/authclient/demo/\" demo/index.html",
