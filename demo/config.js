@@ -13,6 +13,7 @@ export default {
     responseTypes: ['code'],
     pkce: true,
     scopes: [
+      'offline_access',
       'openid',
       'profile',
     ],
