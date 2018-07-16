@@ -268,6 +268,20 @@ class AuthClient {
     const response = await this._requestToken(extendedOptions, config);
     return response;
   }
+
+  async getProfile(token) {
+    const extendedOptions = {
+      ...this._options,
+      scopes: undefined,
+    };
+    const config = await this._getConfiguration(extendedOptions);
+    const profile = await axios.get(config.userinfo_endpoint, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return profile.data;
+  }
 }
 
 export default AuthClient;

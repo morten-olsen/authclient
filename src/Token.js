@@ -61,6 +61,11 @@ class Token {
     );
     return token;
   }
+
+  async getProfile() {
+    const profile = this._authClient.getProfile(await this.getToken());
+    return profile;
+  }
 }
 
 export default Token;

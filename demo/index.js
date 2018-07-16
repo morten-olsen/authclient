@@ -28,9 +28,11 @@ const boot = async (configuration, run) => {
   const authClient = new AuthClient(configuration);
   const isValidUrl = await authClient.isValidUrl(global.location.href);
   if (isValidUrl) {
-    const token = await authClient.exchangeToken(global.location.href);
-    showToken(token, authClient);
+    const rawToken = await authClient.exchangeToken(global.location.href);
+    showToken(rawToken, authClient);
+    const token = new Token(rawToken, authClient);
     global.history.replaceState(undefined, undefined, global.location.pathname);
+    console.log(await token.getProfile());
   } else if (run) {
     const url = await authClient.getLoginUrl();
     global.location.href = url;
