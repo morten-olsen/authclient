@@ -83,7 +83,7 @@ describe('AuthClient', () => {
         expect(query.code_challenge_method).toBeUndefined();
         expect(query.redirect_uri).toBe('about://blank');
         expect(query.response_type).toBe('code');
-        expect(query.scope).toBe('openid profile');
+        expect(query.scope).toBe('offline_access openid profile');
         expect(query.state).toBeUndefined();
       });
 
@@ -101,7 +101,7 @@ describe('AuthClient', () => {
         expect(query.code_challenge_method).toBe('S256');
         expect(query.redirect_uri).toBe('about://blank');
         expect(query.response_type).toBe('code');
-        expect(query.scope).toBe('openid profile');
+        expect(query.scope).toBe('offline_access openid profile');
         expect(query.state).toBeDefined();
       });
     });
@@ -118,7 +118,7 @@ describe('AuthClient', () => {
             expect(data.username).toBeUndefined();
             expect(data.password).toBeUndefined();
             expect(data.code).toBe('test');
-            expect(data.scope).toBe('openid profile');
+            expect(data.scope).toBe('offline_access openid profile');
             expect(data.refresh_token).toBeUndefined();
             expect(data.code_verifier).toBeUndefined();
             return {
@@ -151,7 +151,7 @@ describe('AuthClient', () => {
             expect(data.username).toBeUndefined();
             expect(data.password).toBeUndefined();
             expect(data.code).toBe('test');
-            expect(data.scope).toBe('openid profile');
+            expect(data.scope).toBe('offline_access openid profile');
             expect(data.refresh_token).toBeUndefined();
             expect(data.code_verifier).toBeDefined();
             const challenge = query.code_challenge;
