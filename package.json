@@ -5,8 +5,11 @@
   "types": "build/compiled/index.ts",
   "license": "MIT",
   "scripts": {
+    "test": "npm run lint && jest",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "build": "tsc",
+    "semantic-release": "semantic-release",
+    "coverage": "jest --coverage && cat ./coverage/lcov.info | coveralls",
     "prepare": "npm run build"
   },
   "devDependencies": {
@@ -16,6 +19,7 @@
     "axios-mock-adapter": "^1.15.0",
     "babel-polyfill": "^6.26.0",
     "chai": "^4.1.2",
+    "coveralls": "^3.0.2",
     "electron": "^2.0.5",
     "jest": "^23.4.1",
     "parcel": "^1.9.7",
@@ -26,11 +30,15 @@
     "rollup-plugin-typescript": "^0.8.1",
     "rollup-plugin-typescript2": "^0.16.1",
     "rollup-plugin-uglify": "^4.0.0",
+    "semantic-release": "^15.8.1",
     "ts-jest": "^23.0.1",
     "ts-node": "^7.0.0",
     "tslint": "^5.10.0",
     "typescript": "^2.9.2",
     "uglify-es": "^3.3.9"
+  },
+  "release": {
+    "branch": "master"
   },
   "jest": {
     "moduleFileExtensions": [
