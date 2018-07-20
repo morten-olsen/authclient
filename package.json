@@ -50,16 +50,7 @@
       "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
     "testRegex": "/test/.*\\.spec.(ts|tsx|js)$",
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "/build/",
-      "/src/crypto/",
-      "/src/store/",
-      "/src/configManager.ts"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.{ts}"
-    ],
+    
     "coverageReporters": [
       "json",
       "lcov",
