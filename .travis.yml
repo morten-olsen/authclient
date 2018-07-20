@@ -17,8 +17,8 @@ script:
 deploy:
   skip_cleanup: true
 after_success:
-- yarn jest --collectCoverage
-- cat ./coverage/lcov.json | yarn coveralls
+- yarn coverage/lcov.json
+- ls -l
 - yarn run semantic-release
 before_deploy:
 - git checkout package.json
