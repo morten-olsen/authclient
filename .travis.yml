@@ -14,6 +14,8 @@ script:
 - yarn test
 - yarn run build
 after_script: greenkeeper-lockfile-upload
+deploy:
+  skip_cleanup: true
 after_success:
 - yarn jest --collectCoverage
 - cat ./coverage/lcov.json | yarn coveralls
