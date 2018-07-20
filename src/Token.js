@@ -1,5 +1,5 @@
 class Token {
-  constructor(token, authClient, creationTime = new Date().getTime()) {
+  constructor(token = {}, authClient, creationTime = new Date().getTime()) {
     this._token = token;
     this._authClient = authClient;
     this._creationTime = creationTime;
@@ -21,6 +21,12 @@ class Token {
   expire() {
     this._expires = 0;
     this._creationTime = 0;
+  }
+
+  set(token = {}, creationTime = new Date().getTime()) {
+    this._token = token;
+    this._creationTime = creationTime;
+    this._updateExpires();
   }
 
   toJSON() {
