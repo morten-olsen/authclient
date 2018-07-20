@@ -38,7 +38,9 @@ describe('test', () => {
   });
 
   it('should be able to create a new instance', async () => {
-    const token = new Token(config);
+    const token = new Token(config, {
+      allowExport: true,
+    });
     assert.equal(token.canRefresh, false);
     assert.equal(token.isExpired, true);
     assert.equal(token.isValid, false);
@@ -46,7 +48,9 @@ describe('test', () => {
   });
 
   it('should be able to create a login url', async () => {
-    const token = new Token(config);
+    const token = new Token(config, {
+      allowExport: true,
+    });
     const expectedUrl = 'https://example.com/authorization?client_id=Client.ID&redirect_uri=http%3A%2F%2Flocalhost%3A3000&code_challenge=qdgLLRr1saFHT6DWfWU28VNPIi7e9ynEBnBG3Oadw9g&code_challenge_method=S256&state=state&nonce=nonce&response_type=code&client_secret=secret&grant_types=authorization_code&scope=openid%20profile%20Sampension.Api.Customer';
     assert.equal(await token.getLoginUrl(), expectedUrl);
   });
@@ -56,7 +60,9 @@ describe('test', () => {
       access_token: 'access-code',
       expires_in: 1000,
     });
-    const token = new Token(config);
+    const token = new Token(config, {
+      allowExport: true,
+    });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?code=token&state=state';
     await token.exhangeUrl(resultUrl);
@@ -72,7 +78,9 @@ describe('test', () => {
       expires_in: 1000,
       refresh_token: 'refresh-token',
     });
-    const token = new Token(config);
+    const token = new Token(config, {
+      allowExport: true,
+    });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?code=token&state=state';
     await token.exhangeUrl(resultUrl);
@@ -88,7 +96,9 @@ describe('test', () => {
       expires_in: 1000,
       refresh_token: 'refresh-token',
     });
-    const token = new Token(config);
+    const token = new Token(config, {
+      allowExport: true,
+    });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?code=token&state=state';
     await token.exhangeUrl(resultUrl);

@@ -47,7 +47,9 @@ describe('test', () => {
     mock.onGet('https://example.com/user').replyOnce(200, {
       name: 'test',
     });
-    const token = new Token(config);
+    const token = new Token(config, {
+      allowExport: true,
+    });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?code=token&state=state';
     await token.exhangeUrl(resultUrl);
@@ -59,7 +61,9 @@ describe('test', () => {
     mock.onGet('https://api.example.com/user').replyOnce(200, {
       name: 'test',
     });
-    const token = new Token(config);
+    const token = new Token(config, {
+      allowExport: true,
+    });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?access_token=token&state=state';
     await token.exhangeUrl(resultUrl);

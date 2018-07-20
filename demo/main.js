@@ -45,7 +45,7 @@ app.on('ready', () => {
 
     const startUrl = 'http://localhost:1234'
 
-    mainWindow.loadURL(startUrl)
+    mainWindow.loadFile(path.join(__dirname, 'index.html'));
 
     mainWindow.on('closed', function () {
         // Dereference the window object, usually you would store windows

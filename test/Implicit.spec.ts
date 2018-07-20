@@ -36,7 +36,9 @@ describe('test', () => {
   });
 
   it('should be able to create a new instance', async () => {
-    const token = new Token(config);
+    const token = new Token(config, {
+      allowExport: true,
+    });
     assert.equal(token.canRefresh, false);
     assert.equal(token.isExpired, true);
     assert.equal(token.isValid, false);
@@ -44,13 +46,17 @@ describe('test', () => {
   });
 
   it('should be able to create a login url', async () => {
-    const token = new Token(config);
+    const token = new Token(config, {
+      allowExport: true,
+    });
     const expectedUrl = 'https://example.com/authorization?client_id=Client.ID&redirect_uri=http%3A%2F%2Flocalhost%3A3000&state=state&nonce=nonce&response_type=id_token%20token&client_secret=secret&grant_types=implicit&scope=openid%20profile%20Sampension.Api.Customer';
     assert.equal(await token.getLoginUrl(), expectedUrl);
   });
 
   it('should be able get access token', async () => {
-    const token = new Token(config);
+    const token = new Token(config, {
+      allowExport: true,
+    });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?access_token=access-code&state=state&expires_in=1000';
     await token.exhangeUrl(resultUrl);
@@ -62,7 +68,9 @@ describe('test', () => {
 
   it('should fail is session does not exist', async () => {
     try {
-      const token = new Token(config);
+      const token = new Token(config, {
+      allowExport: true,
+    });
       const resultUrl = 'https://localhost:3000?access_token=access-code&state=state&expires_in=1000';
       await token.exhangeUrl(resultUrl);
       throw Error('should not be reachable');

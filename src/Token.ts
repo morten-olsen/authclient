@@ -1,21 +1,24 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import Url from 'pure-url';
+import * as OrgUrl from 'pure-url';
 import configManager from './configManager';
 import IConfig from './IConfig';
 import IOpenIDConfig from './IOpenID';
 import ISession from './ISession';
 import IToken from './IToken';
 import { toFormData } from './utils';
-
 export {
   IConfig,
 };
+const Url = OrgUrl as any;
 
 export type loader = (options?: any) => Promise<string>;
+export type remove = (options?: any) => Promise<void>;
 export type saver = (token: string, options?: any) => Promise<void>;
 export interface IOptions {
   save?: saver;
   load?: loader;
+  remove?: remove;
+  allowExport?: boolean;
 }
 
 class Token {
@@ -43,6 +46,11 @@ class Token {
 
   get isValid() {
     return !this.isExpired || this.canRefresh;
+  }
+
+  public isValidUrl(url) {
+    const parsed = Url.parse(url);
+    return !!parsed.query.code || !!parsed.query.auth_code;
   }
 
   public async getLoginUrl() {
@@ -103,6 +111,7 @@ class Token {
     const {
       clientId,
       redirectUri,
+      clientSecret,
     } = this.config;
     const {
       token_endpoint: tokenEndpoint,
@@ -112,6 +121,7 @@ class Token {
     if (!session) {
       throw Error('Session could not be found');
     }
+    await configManager.removeItem(sessionId);
 
     if (code) {
       const token = await this.call<any>(
@@ -119,6 +129,7 @@ class Token {
         tokenEndpoint,
         {
           client_id: clientId,
+          client_secret: clientSecret,
           code,
           code_verifier: session.codeVerifier,
           grant_type: 'authorization_code',
@@ -143,8 +154,12 @@ class Token {
   }
 
   public async refresh() {
+    if (!this.canRefresh) {
+      return;
+    }
     const {
       clientId,
+      clientSecret,
       redirectUri,
     } = this.config;
     const {
@@ -158,6 +173,7 @@ class Token {
       tokenEndpoint,
       {
         client_id: clientId,
+        client_secret: clientSecret,
         grant_type: 'refresh_token',
         redirect_uri: redirectUri,
         refresh_token: refreshCode,
@@ -167,8 +183,31 @@ class Token {
       accessCode: token.access_token,
       creationTime: new Date().getTime(),
       expiresIn: token.expires_in,
-      refreshCode: token.refresh_token,
+      refreshCode: token.refresh_token || this.token.refreshCode,
     };
+  }
+
+  public async revoke(options: any) {
+    const {
+      clientId,
+      clientSecret,
+    } = this.config;
+    const {
+      revocation_endpoint: revocationEndpoint,
+    } = await this.getWellKnown();
+    const {
+      refreshCode,
+    } = this.token;
+    const token = await this.call<any>(
+      'post',
+      revocationEndpoint,
+      {
+        client_id: clientId,
+        client_secret: clientSecret,
+        token: refreshCode,
+      },
+    );
+    await this.remove(options);
   }
 
   public expire() {
@@ -180,10 +219,10 @@ class Token {
   }
 
   public async getToken() {
-    if (this.isExpired && this.canRefresh) {
-      await this.refresh();
+    if (!this.options.allowExport) {
+      throw Error('Token exports are not allowed');
     }
-    return this.token.accessCode;
+    return this._getToken();
   }
 
   public setToken(token: IToken = {
@@ -202,6 +241,17 @@ class Token {
       const serialized = JSON.stringify(this.token);
       await this.options.save(serialized, options);
     }
+    return true;
+  }
+
+  public async remove(options?) {
+    if (this.options.remove) {
+      await this.options.remove(options);
+    }
+    this.token = {
+      creationTime: 0,
+      expiresIn: 0,
+    };
     return true;
   }
 
@@ -228,7 +278,7 @@ class Token {
       {},
       {
         headers: {
-          Authorization: `Bearer ${await this.getToken()}`,
+          Authorization: `Bearer ${await this._getToken()}`,
         },
       },
     );
@@ -244,7 +294,7 @@ class Token {
       ...options,
       headers: {
         ...headers,
-        Authorization: `Bearer ${await this.getToken()}`,
+        Authorization: `Bearer ${await this._getToken()}`,
       },
     });
   }
@@ -262,6 +312,13 @@ class Token {
     } = response;
     this.openIdConfig = data;
     return data;
+  }
+
+  private async _getToken() {
+    if (this.isExpired && this.canRefresh) {
+      await this.refresh();
+    }
+    return this.token.accessCode;
   }
 
   private async call<TType>(method, url, data, {

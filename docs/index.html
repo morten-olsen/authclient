@@ -1,0 +1,279 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>authenticatornator</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.js" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">authenticatornator</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="globals.html">Globals</a>
+				</li>
+			</ul>
+			<h1> authenticatornator</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<h1 id="authenticatornator">Authenticatornator</h1>
+				<h2 id="authenticating">Authenticating</h2>
+				<p>To authenticate users three steps are involved</p>
+				<ul>
+					<li><p><strong>configuring the client</strong>: This consists of creating a new instance of <code>authenticatornator</code>, and passing it your oauth <a href="#configuration">configuration</a>, and if needed, <a href="#options">options</a></p>
+					</li>
+					<li><p><strong>redirecting to the login url</strong>: This is done by generating a a url using <code>.getLoginUrl()</code>, which the client can then redirect to</p>
+					</li>
+					<li><p><strong>exchangingin the return url for a token</strong>: This can be done using the <code>.exchangeUrl(url)</code>. This call will figure out it the response is an autorization code, which has to be exchanged to an access token, or if it simply is an access code</p>
+					</li>
+				</ul>
+				<p><strong>Example</strong></p>
+				<pre><code class="lang-js"><span class="hljs-keyword">import</span> Auth <span class="hljs-keyword">from</span> <span class="hljs-string">'authenticatornator'</span>;
+<span class="hljs-keyword">import</span> config <span class="hljs-keyword">from</span> <span class="hljs-string">'./config'</span>;
+
+<span class="hljs-keyword">const</span> auth = <span class="hljs-keyword">new</span> Auth(config);
+
+<span class="hljs-keyword">const</span> boot = <span class="hljs-keyword">async</span> () =&gt; {
+  <span class="hljs-keyword">const</span> url = location.href;
+
+  <span class="hljs-keyword">if</span> (auth.isValidUrl(url)) {
+    <span class="hljs-keyword">await</span> auth.exchangeUrl(url);
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">const</span> url = <span class="hljs-keyword">await</span> auth.getLoginUrl();
+    location.href = url;
+  }
+}
+
+boot().catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.error);
+</code></pre>
+				<h2 id="usage">Usage</h2>
+				<pre><code class="lang-js"><span class="hljs-keyword">const</span> profile = <span class="hljs-keyword">await</span> auth.getProfile();
+<span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> auth.request({
+  <span class="hljs-attr">method</span>: <span class="hljs-string">'get'</span>,
+  <span class="hljs-attr">url</span>: <span class="hljs-string">'https://api.example.com/user'</span>,
+});
+</code></pre>
+				<p>To access to token for using in other environment, the token has to be set as exportable when creating the client</p>
+				<pre><code class="lang-js"><span class="hljs-keyword">const</span> auth = <span class="hljs-keyword">new</span> Auth({
+  ...config
+}, {
+  <span class="hljs-attr">allowExport</span>: <span class="hljs-literal">true</span>,
+});
+
+<span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> auth.getToken();
+</code></pre>
+				<h2 id="saving-and-loading-tokens">Saving and loading tokens</h2>
+				<p>Since it is not recommmended to make tokens exportable, another method for saving and loading is required. This can be supplied as <a href="#options">options</a> to the auth client, by supplying a <code>load</code> and <code>save</code> function to the client</p>
+				<pre><code class="lang-js"><span class="hljs-keyword">const</span> auth = <span class="hljs-keyword">new</span> Auth({
+  ...config
+}, {
+  <span class="hljs-attr">save</span>: <span class="hljs-function">(<span class="hljs-params">value, { key }</span>) =&gt;</span> localStorage.setItem(key, value),
+  <span class="hljs-attr">load</span>: <span class="hljs-function">(<span class="hljs-params">{ key }</span>) =&gt;</span> localStorage.getItem(key),
+});
+
+<span class="hljs-keyword">if</span> (auth.load({ <span class="hljs-attr">key</span>: <span class="hljs-string">'token'</span> })) {
+  <span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> auth.getToken();
+} <span class="hljs-keyword">else</span> {
+  <span class="hljs-comment">// No valid token stored, user login is required</span>
+  <span class="hljs-keyword">await</span> auth.save({
+    <span class="hljs-attr">key</span>: <span class="hljs-string">'token'</span>,
+  });
+}
+</code></pre>
+				<h2 id="adding-platforms">Adding platforms</h2>
+				<p>By default this comes with three supportet platforms, <code>node</code>, <code>browser</code> and <code>react-native</code>, and will try to autoselect the right one for the current platform</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="globals.html"><em>Globals</em></a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_iconfig_.html">"IConfig"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_icrypto_.html">"ICrypto"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_iopenid_.html">"IOpenID"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_isession_.html">"ISession"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_istore_.html">"IStore"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_itoken_.html">"IToken"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_token_.html">"<wbr>Token"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_configmanager_.html">"config<wbr>Manager"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_crypto_node_.html">"crypto/<wbr>Node"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_crypto_testnode_.html">"crypto/<wbr>Test<wbr>Node"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_crypto_web_.html">"crypto/<wbr>Web"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_index_.html">"index"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_index_web_.html">"index.web"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_platform_index_.html">"platform/index"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_platform_index_native_.html">"platform/index.native"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_platform_index_node_.html">"platform/index.node"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_platform_index_web_.html">"platform/index.web"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_store_memory_.html">"store/<wbr>Memory"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_store_native_.html">"store/<wbr>Native"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_store_web_.html">"store/<wbr>Web"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_utils_.html">"utils"</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>

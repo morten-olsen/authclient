@@ -2,12 +2,14 @@
   "name": "authenticatornator",
   "version": "2.0.0-beta",
   "main": "build/compiled/index.js",
+  "browser": "build/compiled/index.web.js",
   "types": "build/compiled/index.ts",
   "license": "MIT",
   "scripts": {
     "test": "npm run lint && jest",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "build": "tsc",
+    "build:docs": "rimraf docs && typedoc --out docs --target ES6 --mode modules --includes src ./src && parcel build demo/index.html -d docs/demo",
     "semantic-release": "semantic-release",
     "coverage": "jest --coverage && cat ./coverage/lcov.info | coveralls",
     "prepare": "npm run build"
@@ -34,6 +36,7 @@
     "ts-jest": "^23.0.1",
     "ts-node": "^7.0.0",
     "tslint": "^5.10.0",
+    "typedoc": "^0.11.1",
     "typescript": "^2.9.2",
     "uglify-es": "^3.3.9"
   },

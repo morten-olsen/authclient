@@ -39,6 +39,7 @@ describe('test', () => {
 
   it('should be able to create a new instance', async () => {
     const token = new Token(config, {
+      allowExport: true,
       load: async () => saved,
       save: async (s) => { saved = s; },
     });
@@ -55,6 +56,7 @@ describe('test', () => {
       expiresIn: 1000,
     });
     const token = new Token(config, {
+      allowExport: true,
       load: async () => saved,
       save: async (s) => { saved = s; },
     });
@@ -66,6 +68,7 @@ describe('test', () => {
 
   it('should not load token if nothing to load', async () => {
     const token = new Token(config, {
+      allowExport: true,
       load: async () => saved,
       save: async (s) => { saved = s; },
     });
@@ -77,6 +80,7 @@ describe('test', () => {
 
   it('should be able to save a token', async () => {
     const token = new Token(config, {
+      allowExport: true,
       load: async () => saved,
       save: async (s) => { saved = s; },
     });
