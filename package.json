@@ -50,7 +50,9 @@
       "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
     "testRegex": "/test/.*\\.spec.(ts|tsx|js)$",
-    
+    "collectCoverageFrom": [
+      "src/Token.ts"
+    ],
     "coverageReporters": [
       "json",
       "lcov",

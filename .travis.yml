@@ -18,7 +18,6 @@ deploy:
   skip_cleanup: true
 after_success:
 - yarn run coverage
-- ls -l
 - yarn run semantic-release
 before_deploy:
 - git checkout package.json
