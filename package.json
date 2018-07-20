@@ -57,6 +57,9 @@
       "/src/store/",
       "/src/configManager.ts"
     ],
+    "collectCoverageFrom": [
+      "src/**/*.{ts}"
+    ],
     "coverageReporters": [
       "json",
       "lcov",
