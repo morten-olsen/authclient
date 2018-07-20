@@ -1931,15 +1931,9 @@ class AuthClient {
           bodyFormData.set(key, data[key]);
         }
       }); */
-      const response = yield (0, _axios2.default)({
-        method: 'post',
-        url: config.token_endpoint,
-        // data: bodyFormData,
-        data: stringified,
-        config: {
-          headers: {
-            'Content-type': 'application/x-www-form-urlencoded'
-          }
+      const response = yield _axios2.default.post(config.token_endpoint, stringified, {
+        headers: {
+          'Content-type': 'application/x-www-form-urlencoded'
         }
       });
 
@@ -2055,93 +2049,7 @@ class AuthClient {
 }
 
 exports.default = AuthClient;
-},{"axios":20,"./config":13,"./utils":64}],7:[function(require,module,exports) {
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-class Token {
-  constructor(token = {}, authClient, creationTime = new Date().getTime()) {
-    this._token = token;
-    this._authClient = authClient;
-    this._creationTime = creationTime;
-    this._updateExpires();
-  }
-
-  _updateExpires() {
-    this._expires = new Date(this._creationTime + this._token.expires_in * 1000).getTime();
-  }
-
-  get canRenew() {
-    return !!this._token.refresh_token;
-  }
-
-  get hasExpired() {
-    return this._expires < new Date().getTime();
-  }
-
-  expire() {
-    this._expires = 0;
-    this._creationTime = 0;
-  }
-
-  set(token = {}, creationTime = new Date().getTime()) {
-    this._token = token;
-    this._creationTime = creationTime;
-    this._updateExpires();
-  }
-
-  toJSON() {
-    return {
-      token: this._token,
-      creationTime: this._creationTime
-    };
-  }
-
-  renewToken() {
-    var _this = this;
-
-    return _asyncToGenerator(function* () {
-      const token = yield _this._authClient.getToken({
-        refreshToken: _this._token.refresh_token,
-        tokenType: 'refresh_token'
-      });
-      _this._creationTime = new Date().getTime();
-      _this._updateExpires();
-      _this._token = _extends({
-        refresh_token: _this._token.refresh_token
-      }, token);
-    })();
-  }
-
-  getToken() {
-    var _this2 = this;
-
-    return _asyncToGenerator(function* () {
-      if (_this2.canRenew && _this2.hasExpired) {
-        yield _this2.renewToken();
-      }
-      if (_this2.hasExpired) {
-        return undefined;
-      }
-      return _this2._token.access_token;
-    })();
-  }
-
-  static fromJSON(json, authClient) {
-    const token = new Token(json.token, authClient, json.creationTime);
-    return token;
-  }
-}
-
-exports.default = Token;
-},{}],14:[function(require,module,exports) {
+},{"axios":20,"./config":13,"./utils":64}],14:[function(require,module,exports) {
 var global = (1,eval)("this");
 "use strict";
 
@@ -2252,16 +2160,98 @@ class Crypto {
 }
 
 exports.default = Crypto;
+},{}],7:[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+class Token {
+  constructor(token = {}, authClient, creationTime = new Date().getTime()) {
+    this._token = token;
+    this._authClient = authClient;
+    this._creationTime = creationTime;
+    this._updateExpires();
+  }
+
+  _updateExpires() {
+    this._expires = new Date(this._creationTime + this._token.expires_in * 1000).getTime();
+  }
+
+  get canRenew() {
+    return !!this._token.refresh_token;
+  }
+
+  get hasExpired() {
+    return this._expires < new Date().getTime();
+  }
+
+  expire() {
+    this._expires = 0;
+    this._creationTime = 0;
+  }
+
+  set(token = {}, creationTime = new Date().getTime()) {
+    this._token = token;
+    this._creationTime = creationTime;
+    this._updateExpires();
+  }
+
+  toJSON() {
+    return {
+      token: this._token,
+      creationTime: this._creationTime
+    };
+  }
+
+  renewToken() {
+    var _this = this;
+
+    return _asyncToGenerator(function* () {
+      const token = yield _this._authClient.getToken({
+        refreshToken: _this._token.refresh_token,
+        tokenType: 'refresh_token'
+      });
+      _this._creationTime = new Date().getTime();
+      _this._updateExpires();
+      _this._token = _extends({
+        refresh_token: _this._token.refresh_token
+      }, token);
+    })();
+  }
+
+  getToken() {
+    var _this2 = this;
+
+    return _asyncToGenerator(function* () {
+      if (_this2.canRenew && _this2.hasExpired) {
+        yield _this2.renewToken();
+      }
+      if (_this2.hasExpired) {
+        return undefined;
+      }
+      return _this2._token.access_token;
+    })();
+  }
+
+  static fromJSON(json, authClient) {
+    const token = new Token(json.token, authClient, json.creationTime);
+    return token;
+  }
+}
+
+exports.default = Token;
 },{}],6:[function(require,module,exports) {
 'use strict';
 
 var _AuthClient = require('./AuthClient');
 
 var _AuthClient2 = _interopRequireDefault(_AuthClient);
-
-var _Token = require('./Token');
-
-var _Token2 = _interopRequireDefault(_Token);
 
 var _config = require('./config');
 
@@ -2275,6 +2265,10 @@ var _CryptoHelper = require('./CryptoHelper.web');
 
 var _CryptoHelper2 = _interopRequireDefault(_CryptoHelper);
 
+var _Token = require('./Token');
+
+var _Token2 = _interopRequireDefault(_Token);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 _config2.default.set('createStore', () => new _Store2.default());
@@ -2283,7 +2277,7 @@ _config2.default.set('createCrypto', () => new _CryptoHelper2.default());
 _AuthClient2.default.Token = _Token2.default;
 
 module.exports = _AuthClient2.default;
-},{"./AuthClient":12,"./Token":7,"./config":13,"./Store.web":14,"./CryptoHelper.web":15}],8:[function(require,module,exports) {
+},{"./AuthClient":12,"./config":13,"./Store.web":14,"./CryptoHelper.web":15,"./Token":7}],8:[function(require,module,exports) {
 var global = (1,eval)("this");
 'use strict';
 

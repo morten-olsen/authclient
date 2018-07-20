@@ -179,17 +179,15 @@ class AuthClient {
         bodyFormData.set(key, data[key]);
       }
     }); */
-    const response = await axios({
-      method: 'post',
-      url: config.token_endpoint,
-      // data: bodyFormData,
-      data: stringified,
-      config: {
+    const response = await axios.post(
+      config.token_endpoint,
+      stringified,
+      {
         headers: {
           'Content-type': 'application/x-www-form-urlencoded',
         },
       },
-    });
+    );
 
     if (sessionId) {
       store.removeItem(sessionId);
