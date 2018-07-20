@@ -1,85 +1,67 @@
 {
   "name": "authenticatornator",
-  "version": "0.0.0-development",
-  "main": "lib/index.js",
-  "browser": "lib/index.web.js",
-  "src": "src/index.web.js",
+  "version": "2.0.0-beta",
+  "main": "build/compiled/index.js",
+  "types": "build/compiled/index.ts",
   "license": "MIT",
   "scripts": {
-    "demo": "parcel -p 3000 -d docs/demo --public-url \"/authclient/demo/\" demo/index.html",
-    "test:lint": "eslint src",
-    "test:jest": "jest",
-    "test": "npm run test:lint && npm run test:jest",
-    "build": "babel src -d lib -s",
-    "build:docs": "esdoc",
-    "bundle": "webpack",
-    "prepare": "npm run build && npm run bundle",
-    "publish:docs": "npm run build:docs && gh-pages -d docs",
+    "test": "npm run lint && jest",
+    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "build": "tsc",
     "semantic-release": "semantic-release",
-    "coverage": "npm run test:jest && cat ./coverage/lcov.info | coveralls",
-    "travis-deploy-once": "travis-deploy-once"
+    "coverage": "jest --coverage && cat ./coverage/lcov.info | coveralls",
+    "prepare": "npm run build"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
-    "babel-eslint": "^8.2.1",
-    "babel-loader": "^7.1.2",
-    "babel-plugin-module-resolver": "^3.0.0",
-    "babel-plugin-transform-flow-strip-types": "^6.22.0",
-    "babel-plugin-transform-private": "^0.1.3",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-stage-1": "^6.24.1",
-    "coveralls": "^3.0.0",
-    "esdoc": "^1.0.4",
-    "esdoc-babel-plugin": "^1.0.1",
-    "esdoc-brand-plugin": "^1.0.0",
-    "esdoc-custom-theme": "^1.4.2",
-    "esdoc-ecmascript-proposal-plugin": "^1.0.0",
-    "esdoc-importpath-plugin": "^1.0.1",
-    "esdoc-publish-html-plugin": "^1.1.0",
-    "esdoc-standard-plugin": "^1.0.0",
-    "eslint": "^4.16.0",
-    "eslint-config-airbnb": "^16.1.0",
-    "eslint-import-resolver-babel-module": "^4.0.0",
-    "eslint-plugin-flowtype": "^2.42.0",
-    "eslint-plugin-import": "^2.8.0",
-    "eslint-plugin-jsx-a11y": "^6.0.3",
-    "eslint-plugin-react": "^7.6.0",
-    "gh-pages": "^1.1.0 ",
-    "husky": "^0.14.3",
-    "jest": "^22.1.4",
-    "parcel-bundler": "^1.6.2",
-    "semantic-release": "^15.0.3",
-    "semantic-release-cli": "^3.6.4",
-    "travis-deploy-once": "^4.4.0",
-    "uglifyjs-webpack-plugin": "^1.2.3",
-    "webpack": "^4.1.1",
-    "webpack-cli": "^2.0.11"
+    "@types/chai": "^4.1.4",
+    "@types/jest": "^23.3.0",
+    "@types/node": "^10.5.2",
+    "axios-mock-adapter": "^1.15.0",
+    "babel-core": "^6.26.3",
+    "babel-polyfill": "^6.26.0",
+    "chai": "^4.1.2",
+    "coveralls": "^3.0.2",
+    "electron": "^2.0.5",
+    "jest": "^23.4.1",
+    "parcel": "^1.9.7",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.62.0",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "rollup-plugin-typescript": "^0.8.1",
+    "rollup-plugin-typescript2": "^0.16.1",
+    "rollup-plugin-uglify": "^4.0.0",
+    "semantic-release": "^15.8.1",
+    "ts-jest": "^23.0.1",
+    "ts-node": "^7.0.0",
+    "tslint": "^5.10.0",
+    "typescript": "^2.9.2",
+    "uglify-es": "^3.3.9"
+  },
+  "release": {
+    "branch": "master"
   },
   "jest": {
-    "coverageDirectory": "./coverage",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "/test/.*\\.spec.(ts|tsx|js)$",
+    "collectCoverageFrom": [
+      "src/Token.ts"
+    ],
     "coverageReporters": [
       "json",
       "lcov",
       "text",
       "html"
-    ],
-    "collectCoverage": true,
-    "roots": [
-      "./src"
-    ],
-    "testMatch": [
-      "**/?(*.)(spec|test).js?(x)"
     ]
   },
   "dependencies": {
-    "axios": "^0.18.0"
-  },
-  "release": {
-    "branch": "master"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/morten-olsen/authclient.git"
+    "axios": "^0.18.0",
+    "pure-url": "^0.8.2"
   }
 }

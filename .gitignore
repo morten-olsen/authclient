@@ -1,6 +1,5 @@
 /.cache
-/lib
 /dist
 /node_modules
-.DS_store
 /coverage
+/build

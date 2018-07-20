@@ -1,28 +1,16 @@
-module.exports = (wallaby) => ({
+module.exports = (w) => ({
   files: [
-    'demo/**/*.js',
-    'src/**/*.js',
-    'src/**/*.jsx',
-    '!src/**/*.spec.js',
-    '!src/**/*.spec.jsx',
-    'test/setup.js',
+    'src/**/*.ts',
+    '!src/**/*.spec.ts',
+    'test/**/*.ts',
+    '!test/**/*.spec.ts',
   ],
-
   tests: [
-    'src/*.spec.js',
-    'src/*.spec.jsx',
-    'test/*.spec.js',
-    'test/*.spec.jsx',
+    'src/*.spec.ts',
+    'test/*.spec.ts',
   ],
-
+  testFramework: 'mocha',
   env: {
-    type: 'node',
-    runner: 'node',
+    type: 'node'
   },
-
-  compilers: {
-    '**/*.js': wallaby.compilers.babel()
-  },
-
-  testFramework: 'jest'
 });

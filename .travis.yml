@@ -7,14 +7,15 @@ notifications:
 node_js:
 - '9'
 install:
-- yarn global add greenkeeper-lockfile@1
+#- yarn global add greenkeeper-lockfile@1
 - yarn install
-before_script: greenkeeper-lockfile-update
+#before_script: greenkeeper-lockfile-update
 script:
 - yarn test
 - yarn run build
-- yarn run bundle
-after_script: greenkeeper-lockfile-upload
+#after_script: greenkeeper-lockfile-upload
+deploy:
+  skip_cleanup: true
 after_success:
 - yarn run coverage
 - yarn run semantic-release
