@@ -50,7 +50,7 @@
     "jest": "^22.1.4",
     "parcel-bundler": "^1.6.2",
     "semantic-release": "^15.0.3",
-    "semantic-release-cli": "^3.6.4",
+    "semantic-release-cli": "^4.0.0",
     "travis-deploy-once": "^4.4.0",
     "uglifyjs-webpack-plugin": "^1.2.3",
     "webpack": "^4.1.1",
