@@ -15,7 +15,8 @@ script:
 - yarn run build
 after_script: greenkeeper-lockfile-upload
 after_success:
-- yarn run coverage
+- yarn jest --coverage
+- cat ./coverage/lcov.json | yarn coveralls
 - yarn run semantic-release
 before_deploy:
 - git checkout package.json
