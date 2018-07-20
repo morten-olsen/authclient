@@ -1,4 +1,5 @@
 language: node_js
+sudo: true
 cache:
   directories:
   - "~/.npm"
@@ -17,7 +18,7 @@ script:
 deploy:
   skip_cleanup: true
 after_success:
-- yarn coverage/lcov.json
+- yarn run coverage
 - ls -l
 - yarn run semantic-release
 before_deploy:
