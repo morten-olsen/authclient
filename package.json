@@ -65,12 +65,7 @@
       "lcov",
       "text",
       "html"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "lines": 95
-      }
-    }
+    ]
   },
   "dependencies": {
     "axios": "^0.18.0",
