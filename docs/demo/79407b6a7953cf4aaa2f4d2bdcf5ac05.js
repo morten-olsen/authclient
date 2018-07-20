@@ -71,7 +71,7 @@ require = (function (modules, cache, entry) {
 
   // Override the current require with this new one
   return newRequire;
-})({24:[function(require,module,exports) {
+})({27:[function(require,module,exports) {
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -84,7 +84,7 @@ module.exports = function bind(fn, thisArg) {
   };
 };
 
-},{}],68:[function(require,module,exports) {
+},{}],60:[function(require,module,exports) {
 /*!
  * Determine if an object is a Buffer
  *
@@ -107,7 +107,7 @@ function isSlowBuffer (obj) {
   return typeof obj.readFloatLE === 'function' && typeof obj.slice === 'function' && isBuffer(obj.slice(0, 0))
 }
 
-},{}],22:[function(require,module,exports) {
+},{}],24:[function(require,module,exports) {
 'use strict';
 
 var bind = require('./helpers/bind');
@@ -412,7 +412,7 @@ module.exports = {
   trim: trim
 };
 
-},{"./helpers/bind":24,"is-buffer":68}],41:[function(require,module,exports) {
+},{"./helpers/bind":27,"is-buffer":60}],43:[function(require,module,exports) {
 'use strict';
 
 var utils = require('../utils');
@@ -426,7 +426,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
   });
 };
 
-},{"../utils":22}],70:[function(require,module,exports) {
+},{"../utils":24}],61:[function(require,module,exports) {
 'use strict';
 
 /**
@@ -449,7 +449,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
   return error;
 };
 
-},{}],52:[function(require,module,exports) {
+},{}],54:[function(require,module,exports) {
 'use strict';
 
 var enhanceError = require('./enhanceError');
@@ -469,7 +469,7 @@ module.exports = function createError(message, config, code, request, response) 
   return enhanceError(error, config, code, request, response);
 };
 
-},{"./enhanceError":70}],48:[function(require,module,exports) {
+},{"./enhanceError":61}],50:[function(require,module,exports) {
 'use strict';
 
 var createError = require('./createError');
@@ -497,7 +497,7 @@ module.exports = function settle(resolve, reject, response) {
   }
 };
 
-},{"./createError":52}],49:[function(require,module,exports) {
+},{"./createError":54}],51:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -565,7 +565,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
   return url;
 };
 
-},{"./../utils":22}],50:[function(require,module,exports) {
+},{"./../utils":24}],52:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -620,7 +620,7 @@ module.exports = function parseHeaders(headers) {
   return parsed;
 };
 
-},{"./../utils":22}],51:[function(require,module,exports) {
+},{"./../utils":24}],53:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -690,7 +690,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":22}],53:[function(require,module,exports) {
+},{"./../utils":24}],55:[function(require,module,exports) {
 'use strict';
 
 // btoa polyfill for IE<10 courtesy https://github.com/davidchambers/Base64.js
@@ -728,7 +728,7 @@ function btoa(input) {
 
 module.exports = btoa;
 
-},{}],54:[function(require,module,exports) {
+},{}],56:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -783,7 +783,7 @@ module.exports = (
   })()
 );
 
-},{"./../utils":22}],40:[function(require,module,exports) {
+},{"./../utils":24}],42:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -958,7 +958,7 @@ module.exports = function xhrAdapter(config) {
     request.send(requestData);
   });
 };
-},{"./../utils":22,"./../core/settle":48,"./../helpers/buildURL":49,"./../helpers/parseHeaders":50,"./../helpers/isURLSameOrigin":51,"../core/createError":52,"./../helpers/btoa":53,"./../helpers/cookies":54}],38:[function(require,module,exports) {
+},{"./../utils":24,"./../core/settle":50,"./../helpers/buildURL":51,"./../helpers/parseHeaders":52,"./../helpers/isURLSameOrigin":53,"../core/createError":54,"./../helpers/btoa":55,"./../helpers/cookies":56}],40:[function(require,module,exports) {
 
 // shim for using process in browser
 var process = module.exports = {};
@@ -1145,7 +1145,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],23:[function(require,module,exports) {
+},{}],25:[function(require,module,exports) {
 var process = require("process");
 'use strict';
 
@@ -1244,7 +1244,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = defaults;
 
-},{"./utils":22,"./helpers/normalizeHeaderName":41,"./adapters/xhr":40,"./adapters/http":40,"process":38}],44:[function(require,module,exports) {
+},{"./utils":24,"./helpers/normalizeHeaderName":43,"./adapters/xhr":42,"./adapters/http":42,"process":40}],46:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -1298,7 +1298,7 @@ InterceptorManager.prototype.forEach = function forEach(fn) {
 
 module.exports = InterceptorManager;
 
-},{"./../utils":22}],62:[function(require,module,exports) {
+},{"./../utils":24}],57:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -1320,14 +1320,14 @@ module.exports = function transformData(data, headers, fns) {
   return data;
 };
 
-},{"./../utils":22}],28:[function(require,module,exports) {
+},{"./../utils":24}],30:[function(require,module,exports) {
 'use strict';
 
 module.exports = function isCancel(value) {
   return !!(value && value.__CANCEL__);
 };
 
-},{}],63:[function(require,module,exports) {
+},{}],58:[function(require,module,exports) {
 'use strict';
 
 /**
@@ -1343,7 +1343,7 @@ module.exports = function isAbsoluteURL(url) {
   return /^([a-z][a-z\d\+\-\.]*:)?\/\//i.test(url);
 };
 
-},{}],64:[function(require,module,exports) {
+},{}],59:[function(require,module,exports) {
 'use strict';
 
 /**
@@ -1359,7 +1359,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
     : baseURL;
 };
 
-},{}],45:[function(require,module,exports) {
+},{}],47:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./../utils');
@@ -1447,7 +1447,7 @@ module.exports = function dispatchRequest(config) {
   });
 };
 
-},{"./../utils":22,"./transformData":62,"../cancel/isCancel":28,"../defaults":23,"./../helpers/isAbsoluteURL":63,"./../helpers/combineURLs":64}],25:[function(require,module,exports) {
+},{"./../utils":24,"./transformData":57,"../cancel/isCancel":30,"../defaults":25,"./../helpers/isAbsoluteURL":58,"./../helpers/combineURLs":59}],26:[function(require,module,exports) {
 'use strict';
 
 var defaults = require('./../defaults');
@@ -1528,7 +1528,7 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = Axios;
 
-},{"./../defaults":23,"./../utils":22,"./InterceptorManager":44,"./dispatchRequest":45}],26:[function(require,module,exports) {
+},{"./../defaults":25,"./../utils":24,"./InterceptorManager":46,"./dispatchRequest":47}],28:[function(require,module,exports) {
 'use strict';
 
 /**
@@ -1549,7 +1549,7 @@ Cancel.prototype.__CANCEL__ = true;
 
 module.exports = Cancel;
 
-},{}],27:[function(require,module,exports) {
+},{}],29:[function(require,module,exports) {
 'use strict';
 
 var Cancel = require('./Cancel');
@@ -1608,7 +1608,7 @@ CancelToken.source = function source() {
 
 module.exports = CancelToken;
 
-},{"./Cancel":26}],29:[function(require,module,exports) {
+},{"./Cancel":28}],31:[function(require,module,exports) {
 'use strict';
 
 /**
@@ -1637,7 +1637,7 @@ module.exports = function spread(callback) {
   };
 };
 
-},{}],20:[function(require,module,exports) {
+},{}],22:[function(require,module,exports) {
 'use strict';
 
 var utils = require('./utils');
@@ -1691,9 +1691,9 @@ module.exports = axios;
 // Allow use of default import syntax in TypeScript
 module.exports.default = axios;
 
-},{"./utils":22,"./helpers/bind":24,"./core/Axios":25,"./defaults":23,"./cancel/Cancel":26,"./cancel/CancelToken":27,"./cancel/isCancel":28,"./helpers/spread":29}],18:[function(require,module,exports) {
+},{"./utils":24,"./helpers/bind":27,"./core/Axios":26,"./defaults":25,"./cancel/Cancel":28,"./cancel/CancelToken":29,"./cancel/isCancel":30,"./helpers/spread":31}],20:[function(require,module,exports) {
 module.exports = require('./lib/axios');
-},{"./lib/axios":20}],11:[function(require,module,exports) {
+},{"./lib/axios":22}],13:[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1715,7 +1715,18 @@ class Config {
 }
 
 exports.default = new Config();
-},{}],10:[function(require,module,exports) {
+},{}],64:[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/** @ignore */
+const base64URLEncode = exports.base64URLEncode = value => value.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+
+/** @ignore */
+const toFormData = exports.toFormData = obj => Object.keys(obj).filter(key => obj[key]).map(key => `${key}=${encodeURIComponent(obj[key])}`).join('&');
+},{}],12:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1731,6 +1742,8 @@ var _axios2 = _interopRequireDefault(_axios);
 var _config = require('./config');
 
 var _config2 = _interopRequireDefault(_config);
+
+var _utils = require('./utils');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1899,7 +1912,7 @@ class AuthClient {
       } = options;
 
       const session = store ? yield store.getItem(sessionId) : undefined;
-      const response = yield _axios2.default.post(config.token_endpoint, {
+      const data = {
         client_id: clientId,
         client_secret: clientSecret,
         redirect_uri: redirectUri,
@@ -1910,7 +1923,26 @@ class AuthClient {
         scope: scopes ? scopes.join(' ') : undefined,
         refresh_token: refreshToken,
         code_verifier: session ? session.verifier : undefined
+      };
+      const stringified = (0, _utils.toFormData)(data);
+      /* const bodyFormData = new global.FormData();
+      Object.keys(data).forEach((key) => {
+        if (data[key]) {
+          bodyFormData.set(key, data[key]);
+        }
+      }); */
+      const response = yield (0, _axios2.default)({
+        method: 'post',
+        url: config.token_endpoint,
+        // data: bodyFormData,
+        data: stringified,
+        config: {
+          headers: {
+            'Content-type': 'application/x-www-form-urlencoded'
+          }
+        }
       });
+
       if (sessionId) {
         store.removeItem(sessionId);
       }
@@ -2023,7 +2055,93 @@ class AuthClient {
 }
 
 exports.default = AuthClient;
-},{"axios":18,"./config":11}],12:[function(require,module,exports) {
+},{"axios":20,"./config":13,"./utils":64}],7:[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+class Token {
+  constructor(token = {}, authClient, creationTime = new Date().getTime()) {
+    this._token = token;
+    this._authClient = authClient;
+    this._creationTime = creationTime;
+    this._updateExpires();
+  }
+
+  _updateExpires() {
+    this._expires = new Date(this._creationTime + this._token.expires_in * 1000).getTime();
+  }
+
+  get canRenew() {
+    return !!this._token.refresh_token;
+  }
+
+  get hasExpired() {
+    return this._expires < new Date().getTime();
+  }
+
+  expire() {
+    this._expires = 0;
+    this._creationTime = 0;
+  }
+
+  set(token = {}, creationTime = new Date().getTime()) {
+    this._token = token;
+    this._creationTime = creationTime;
+    this._updateExpires();
+  }
+
+  toJSON() {
+    return {
+      token: this._token,
+      creationTime: this._creationTime
+    };
+  }
+
+  renewToken() {
+    var _this = this;
+
+    return _asyncToGenerator(function* () {
+      const token = yield _this._authClient.getToken({
+        refreshToken: _this._token.refresh_token,
+        tokenType: 'refresh_token'
+      });
+      _this._creationTime = new Date().getTime();
+      _this._updateExpires();
+      _this._token = _extends({
+        refresh_token: _this._token.refresh_token
+      }, token);
+    })();
+  }
+
+  getToken() {
+    var _this2 = this;
+
+    return _asyncToGenerator(function* () {
+      if (_this2.canRenew && _this2.hasExpired) {
+        yield _this2.renewToken();
+      }
+      if (_this2.hasExpired) {
+        return undefined;
+      }
+      return _this2._token.access_token;
+    })();
+  }
+
+  static fromJSON(json, authClient) {
+    const token = new Token(json.token, authClient, json.creationTime);
+    return token;
+  }
+}
+
+exports.default = Token;
+},{}],14:[function(require,module,exports) {
 var global = (1,eval)("this");
 "use strict";
 
@@ -2071,7 +2189,7 @@ class Store {
 }
 
 exports.default = Store;
-},{}],13:[function(require,module,exports) {
+},{}],15:[function(require,module,exports) {
 var global = (1,eval)("this");
 'use strict';
 
@@ -2141,6 +2259,10 @@ var _AuthClient = require('./AuthClient');
 
 var _AuthClient2 = _interopRequireDefault(_AuthClient);
 
+var _Token = require('./Token');
+
+var _Token2 = _interopRequireDefault(_Token);
+
 var _config = require('./config');
 
 var _config2 = _interopRequireDefault(_config);
@@ -2158,88 +2280,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 _config2.default.set('createStore', () => new _Store2.default());
 _config2.default.set('createCrypto', () => new _CryptoHelper2.default());
 
+_AuthClient2.default.Token = _Token2.default;
+
 module.exports = _AuthClient2.default;
-},{"./AuthClient":10,"./config":11,"./Store.web":12,"./CryptoHelper.web":13}],72:[function(require,module,exports) {
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-class Token {
-  constructor(token, authClient, creationTime = new Date().getTime()) {
-    this._token = token;
-    this._authClient = authClient;
-    this._creationTime = creationTime;
-    this._updateExpires();
-  }
-
-  _updateExpires() {
-    this._expires = new Date(this._creationTime + this._token.expires_in * 1000).getTime();
-  }
-
-  get canRenew() {
-    return !!this._token.refresh_token;
-  }
-
-  get hasExpired() {
-    return this._expires < new Date().getTime();
-  }
-
-  expire() {
-    this._expires = 0;
-    this._creationTime = 0;
-  }
-
-  toJSON() {
-    return {
-      token: this._token,
-      creationTime: this._creationTime
-    };
-  }
-
-  renewToken() {
-    var _this = this;
-
-    return _asyncToGenerator(function* () {
-      const token = yield _this._authClient.getToken({
-        refreshToken: _this._token.refresh_token,
-        tokenType: 'refresh_token'
-      });
-      _this._creationTime = new Date().getTime();
-      _this._updateExpires();
-      _this._token = _extends({
-        refresh_token: _this._token.refresh_token
-      }, token);
-    })();
-  }
-
-  getToken() {
-    var _this2 = this;
-
-    return _asyncToGenerator(function* () {
-      if (_this2.canRenew && _this2.hasExpired) {
-        yield _this2.renewToken();
-      }
-      if (_this2.hasExpired) {
-        return undefined;
-      }
-      return _this2._token.access_token;
-    })();
-  }
-
-  static fromJSON(json, authClient) {
-    const token = new Token(json.token, authClient, json.creationTime);
-    return token;
-  }
-}
-
-exports.default = Token;
-},{}],7:[function(require,module,exports) {
+},{"./AuthClient":12,"./Token":7,"./config":13,"./Store.web":14,"./CryptoHelper.web":15}],8:[function(require,module,exports) {
 var global = (1,eval)("this");
 'use strict';
 
@@ -2354,7 +2398,7 @@ elms.pass.login.onclick = _asyncToGenerator(function* () {
   showToken(token, authClient);
 });
 boot(_config2.default.base, false).catch(err => console.error(err));
-},{"../src/index.web":6,"../src/Token":72,"./config":7}],71:[function(require,module,exports) {
+},{"../src/index.web":6,"../src/Token":7,"./config":8}],65:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -2376,7 +2420,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '61674' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '56761' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -2477,5 +2521,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[71,4])
+},{}]},{},[65,4])
 //# sourceMappingURL=/authclient/demo/79407b6a7953cf4aaa2f4d2bdcf5ac05.map

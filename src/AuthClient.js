@@ -1,5 +1,6 @@
 import axios from 'axios';
 import configManager from 'config';
+import { toFormData } from './utils';
 
 const defaultOptions = {
   tokenType: 'authorization_code',
@@ -159,7 +160,7 @@ class AuthClient {
     } = options;
 
     const session = store ? await store.getItem(sessionId) : undefined;
-    const response = await axios.post(config.token_endpoint, {
+    const data = {
       client_id: clientId,
       client_secret: clientSecret,
       redirect_uri: redirectUri,
@@ -170,7 +171,26 @@ class AuthClient {
       scope: scopes ? scopes.join(' ') : undefined,
       refresh_token: refreshToken,
       code_verifier: session ? session.verifier : undefined,
+    };
+    const stringified = toFormData(data);
+    /* const bodyFormData = new global.FormData();
+    Object.keys(data).forEach((key) => {
+      if (data[key]) {
+        bodyFormData.set(key, data[key]);
+      }
+    }); */
+    const response = await axios({
+      method: 'post',
+      url: config.token_endpoint,
+      // data: bodyFormData,
+      data: stringified,
+      config: {
+        headers: {
+          'Content-type': 'application/x-www-form-urlencoded',
+        },
+      },
     });
+
     if (sessionId) {
       store.removeItem(sessionId);
     }
