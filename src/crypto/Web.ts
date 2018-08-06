@@ -37,7 +37,7 @@ class NodeCrypto implements ICrypto {
   }
 
   public async random(type: string) {
-    const sizeInBytes = 32;
+    const sizeInBytes = 64;
     const buffer = new Uint8Array(sizeInBytes);
     if (HAS_CRYPTO) {
       (global as any).crypto.getRandomValues(buffer);
