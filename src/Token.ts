@@ -1,15 +1,16 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import * as OrgUrl from 'pure-url';
+import BaseUrl, * as OrgUrl from 'pure-url';
 import configManager from './configManager';
 import IConfig from './IConfig';
 import IOpenIDConfig from './IOpenID';
 import ISession from './ISession';
 import IToken from './IToken';
+import { parse } from './url';
 import { toFormData } from './utils';
 export {
   IConfig,
 };
-const Url = OrgUrl as any;
+const Url = (OrgUrl.default || OrgUrl) as any;
 
 export type loader = (options?: any) => Promise<string>;
 export type remove = (options?: any) => Promise<void>;
@@ -49,8 +50,8 @@ class Token {
   }
 
   public isValidUrl(url) {
-    const parsed = Url.parse(url);
-    return !!parsed.query.code || !!parsed.query.auth_code;
+    const parsed = parse(url);
+    return !!parsed.code || !!parsed.access_token;
   }
 
   public async getLoginUrl() {
@@ -103,11 +104,11 @@ class Token {
   }
 
   public async exhangeUrl(url: string) {
-    const parsed = Url.parse(url);
+    const parsed = parse(url);
     const {
       code,
       state: sessionId,
-    } = parsed.query;
+    } = parsed;
     const {
       clientId,
       redirectUri,
@@ -145,11 +146,11 @@ class Token {
       return token;
     } else {
       this.token = {
-        accessCode: parsed.query.access_token,
+        accessCode: parsed.access_token,
         creationTime: new Date().getTime(),
-        expiresIn: parseInt(parsed.query.expires_in || '0', 10),
+        expiresIn: parseInt(parsed.expires_in || '0', 10),
       };
-      return parsed.query;
+      return parsed;
     }
   }
 

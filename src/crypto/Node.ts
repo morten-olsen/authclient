@@ -16,7 +16,7 @@ class NodeCrypto implements ICrypto {
   }
 
   public async random(type: string) {
-    return this.base64UrlEncode(crypto.randomBytes(32));
+    return this.base64UrlEncode(crypto.randomBytes(64));
   }
 }
 

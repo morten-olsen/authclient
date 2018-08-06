@@ -6,6 +6,7 @@
   "types": "build/compiled/index.ts",
   "license": "MIT",
   "scripts": {
+    "demo": "parcel demo/index.html -p 1234",
     "test": "npm run lint && jest",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "build": "tsc",
