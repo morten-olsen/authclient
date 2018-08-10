@@ -88,7 +88,7 @@ describe('test', () => {
     assert.equal(saved, undefined);
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?access_token=access-code&state=state&expires_in=1000';
-    await token.exhangeUrl(resultUrl);
+    await token.exchangeUrl(resultUrl);
     assert.equal(await token.save(), true);
     assert.isDefined(saved);
   });

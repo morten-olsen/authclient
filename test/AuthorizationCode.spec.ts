@@ -65,7 +65,7 @@ describe('test', () => {
     });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?code=token&state=state';
-    await token.exhangeUrl(resultUrl);
+    await token.exchangeUrl(resultUrl);
     assert.equal(token.canRefresh, false);
     assert.equal(token.isExpired, false);
     assert.equal(token.isValid, true);
@@ -83,7 +83,7 @@ describe('test', () => {
     });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?code=token&state=state';
-    await token.exhangeUrl(resultUrl);
+    await token.exchangeUrl(resultUrl);
     assert.equal(token.canRefresh, true);
     assert.equal(token.isExpired, false);
     assert.equal(token.isValid, true);
@@ -101,7 +101,7 @@ describe('test', () => {
     });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?code=token&state=state';
-    await token.exhangeUrl(resultUrl);
+    await token.exchangeUrl(resultUrl);
     assert.equal(token.canRefresh, true);
     assert.equal(token.isExpired, false);
     assert.equal(token.isValid, true);

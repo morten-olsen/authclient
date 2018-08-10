@@ -59,7 +59,7 @@ describe('test', () => {
     });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?access_token=access-code&state=state&expires_in=1000';
-    await token.exhangeUrl(resultUrl);
+    await token.exchangeUrl(resultUrl);
     assert.equal(token.canRefresh, false);
     assert.equal(token.isExpired, false);
     assert.equal(token.isValid, true);
@@ -72,7 +72,7 @@ describe('test', () => {
       allowExport: true,
     });
       const resultUrl = 'https://localhost:3000?access_token=access-code&state=state&expires_in=1000';
-      await token.exhangeUrl(resultUrl);
+      await token.exchangeUrl(resultUrl);
       throw Error('should not be reachable');
     } catch (err) {
       assert.equal(err.toString(), 'Error: Session could not be found');

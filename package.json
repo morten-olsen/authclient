@@ -1,6 +1,6 @@
 {
   "name": "authenticatornator",
-  "version": "2.0.0-beta",
+  "version": "2.0.1-beta.2",
   "main": "build/compiled/index.js",
   "browser": "build/compiled/index.web.js",
   "types": "build/compiled/index.ts",

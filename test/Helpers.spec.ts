@@ -52,7 +52,7 @@ describe('test', () => {
     });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?code=token&state=state';
-    await token.exhangeUrl(resultUrl);
+    await token.exchangeUrl(resultUrl);
     const profile = await token.getProfile();
     assert.equal(profile.name, 'test');
   });
@@ -66,7 +66,7 @@ describe('test', () => {
     });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?access_token=token&state=state';
-    await token.exhangeUrl(resultUrl);
+    await token.exchangeUrl(resultUrl);
     const profile = await token.request({
       method: 'get',
       url: 'https://api.example.com/user',
