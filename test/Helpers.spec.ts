@@ -73,4 +73,28 @@ describe('test', () => {
     });
     assert.equal(profile.data.name, 'test');
   });
+
+  it('should be able to detect valid query string url', () => {
+    const token = new Token(config);
+    const url = 'https://localhost:3000?code=foo';
+    assert.isTrue(token.isValidUrl(url));
+  });
+
+  it('should be able to detect valid hash url', () => {
+    const token = new Token(config);
+    const url = 'https://localhost:3000#code=foo';
+    assert.isTrue(token.isValidUrl(url));
+  });
+
+  it('should be able to detect invalid hash url', () => {
+    const token = new Token(config);
+    const url = 'https://localhost:3000#codee=foo';
+    assert.isFalse(token.isValidUrl(url));
+  });
+
+  it('should be able to detect invalid hash url', () => {
+    const token = new Token(config);
+    const url = 'https://localhost:3000?codee=foo';
+    assert.isFalse(token.isValidUrl(url));
+  });
 });

@@ -49,7 +49,10 @@ describe('test', () => {
     const token = new Token(config, {
       allowExport: true,
     });
-    const expectedUrl = 'https://example.com/authorization?client_id=Client.ID&redirect_uri=http%3A%2F%2Flocalhost%3A3000&state=state&nonce=nonce&response_type=id_token%20token&client_secret=secret&grant_types=implicit&scope=openid%20profile%20Sampension.Api.Customer';
+    const expectedUrl = 'https://example.com/authorization?client_id'
+      + '=Client.ID&redirect_uri=http%3A%2F%2Flocalhost%3A3000&state'
+      + '=state&nonce=nonce&response_type=id_token%20token&client_se'
+      + 'cret=secret&grant_types=implicit&scope=openid%20profile%20Sampension.Api.Customer';
     assert.equal(await token.getLoginUrl(), expectedUrl);
   });
 

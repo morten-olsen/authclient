@@ -57,8 +57,8 @@ describe('test', () => {
     });
     const token = new Token(config, {
       allowExport: true,
+      autoSave: true,
       load: async () => saved,
-      save: async (s) => { saved = s; },
     });
 
     assert.equal(await token.getToken(), undefined);
@@ -70,7 +70,6 @@ describe('test', () => {
     const token = new Token(config, {
       allowExport: true,
       load: async () => saved,
-      save: async (s) => { saved = s; },
     });
 
     assert.equal(await token.getToken(), undefined);
@@ -81,7 +80,6 @@ describe('test', () => {
   it('should be able to save a token', async () => {
     const token = new Token(config, {
       allowExport: true,
-      load: async () => saved,
       save: async (s) => { saved = s; },
     });
 
@@ -91,5 +89,39 @@ describe('test', () => {
     await token.exchangeUrl(resultUrl);
     assert.equal(await token.save(), true);
     assert.isDefined(saved);
+  });
+
+  it('should be able to remove a token', async () => {
+    const data = {
+      saved: JSON.stringify({
+        accessCode: 'access-code',
+        creationTime: new Date().getTime(),
+        expiresIn: 1000,
+      }),
+    };
+    const token = new Token(config, {
+      allowExport: true,
+      autoSave: true,
+      load: async () => data.saved,
+      remove: async () => data.saved = undefined,
+    });
+
+    assert.equal(await token.load(), true);
+    assert.equal(await token.getToken(), 'access-code');
+
+    await token.remove();
+    assert.equal(await token.getToken(), undefined);
+    assert.equal(await token.load(), false);
+    assert.equal(await token.getToken(), undefined);
+  });
+
+  it('should indicate no loaded token if no save method', async () => {
+    const token = new Token(config);
+    assert.equal(await token.load(), false);
+  });
+
+  it('should indicate no loaded token if no save method', async () => {
+    const token = new Token(config);
+    assert.equal(await token.save(), true);
   });
 });
