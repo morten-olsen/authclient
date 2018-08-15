@@ -203,7 +203,7 @@ class Token {
     }
   }
 
-  public async revoke(options: any) {
+  public async revoke(options: any = {}) {
     const {
       clientId,
       clientSecret,
