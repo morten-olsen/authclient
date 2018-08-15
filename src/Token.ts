@@ -20,6 +20,8 @@ export interface IOptions {
   load?: loader;
   remove?: remove;
   allowExport?: boolean;
+  autoRenew?: boolean;
+  autoSave?: boolean;
 }
 
 class Token {
@@ -38,7 +40,7 @@ class Token {
 
   get isExpired() {
     const currentTime = new Date().getTime();
-    return this.token.creationTime + this.token.expiresIn < currentTime;
+    return this.token.creationTime + (this.token.expiresIn * 1000) < currentTime;
   }
 
   get canRefresh() {
@@ -103,7 +105,7 @@ class Token {
     return url.toString();
   }
 
-  public async exhangeUrl(url: string) {
+  public async exchangeUrl(url: string) {
     const parsed = parse(url);
     const {
       code,
@@ -143,6 +145,9 @@ class Token {
         expiresIn: token.expires_in,
         refreshCode: token.refresh_token,
       };
+      if (this.options.autoSave) {
+        this.save();
+      }
       return token;
     } else {
       this.token = {
@@ -150,6 +155,9 @@ class Token {
         creationTime: new Date().getTime(),
         expiresIn: parseInt(parsed.expires_in || '0', 10),
       };
+      if (this.options.autoSave) {
+        this.save();
+      }
       return parsed;
     }
   }
@@ -186,6 +194,9 @@ class Token {
       expiresIn: token.expires_in,
       refreshCode: token.refresh_token || this.token.refreshCode,
     };
+    if (this.options.autoSave) {
+      this.save();
+    }
   }
 
   public async revoke(options: any) {
@@ -208,6 +219,9 @@ class Token {
         token: refreshCode,
       },
     );
+    if (this.options.autoSave) {
+      this.save();
+    }
     await this.remove(options);
   }
 
@@ -316,7 +330,7 @@ class Token {
   }
 
   private async _getToken() {
-    if (this.isExpired && this.canRefresh) {
+    if (this.options.autoRenew !== false && this.isExpired && this.canRefresh) {
       await this.refresh();
     }
     return this.token.accessCode;

@@ -51,7 +51,10 @@ describe('test', () => {
     const token = new Token(config, {
       allowExport: true,
     });
-    const expectedUrl = 'https://example.com/authorization?client_id=Client.ID&redirect_uri=http%3A%2F%2Flocalhost%3A3000&code_challenge=qdgLLRr1saFHT6DWfWU28VNPIi7e9ynEBnBG3Oadw9g&code_challenge_method=S256&state=state&nonce=nonce&response_type=code&client_secret=secret&grant_types=authorization_code&scope=openid%20profile%20Sampension.Api.Customer';
+    const expectedUrl = 'https://example.com/authorization?client_id=Client.ID&redirect_uri='
+      + 'http%3A%2F%2Flocalhost%3A3000&code_challenge=qdgLLRr1saFHT6DWfWU28VNPIi7e9ynEBnBG3O'
+      + 'adw9g&code_challenge_method=S256&state=state&nonce=nonce&response_type=code&client_'
+      + 'secret=secret&grant_types=authorization_code&scope=openid%20profile%20Sampension.Api.Customer';
     assert.equal(await token.getLoginUrl(), expectedUrl);
   });
 
@@ -65,7 +68,7 @@ describe('test', () => {
     });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?code=token&state=state';
-    await token.exhangeUrl(resultUrl);
+    await token.exchangeUrl(resultUrl);
     assert.equal(token.canRefresh, false);
     assert.equal(token.isExpired, false);
     assert.equal(token.isValid, true);
@@ -83,7 +86,7 @@ describe('test', () => {
     });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?code=token&state=state';
-    await token.exhangeUrl(resultUrl);
+    await token.exchangeUrl(resultUrl);
     assert.equal(token.canRefresh, true);
     assert.equal(token.isExpired, false);
     assert.equal(token.isValid, true);
@@ -101,7 +104,7 @@ describe('test', () => {
     });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?code=token&state=state';
-    await token.exhangeUrl(resultUrl);
+    await token.exchangeUrl(resultUrl);
     assert.equal(token.canRefresh, true);
     assert.equal(token.isExpired, false);
     assert.equal(token.isValid, true);
