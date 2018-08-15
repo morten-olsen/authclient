@@ -49,7 +49,10 @@ describe('test', () => {
     const token = new Token(config, {
       allowExport: true,
     });
-    const expectedUrl = 'https://example.com/authorization?client_id=Client.ID&redirect_uri=http%3A%2F%2Flocalhost%3A3000&state=state&nonce=nonce&response_type=id_token%20token&client_secret=secret&grant_types=implicit&scope=openid%20profile%20Sampension.Api.Customer';
+    const expectedUrl = 'https://example.com/authorization?client_id'
+      + '=Client.ID&redirect_uri=http%3A%2F%2Flocalhost%3A3000&state'
+      + '=state&nonce=nonce&response_type=id_token%20token&client_se'
+      + 'cret=secret&grant_types=implicit&scope=openid%20profile%20Sampension.Api.Customer';
     assert.equal(await token.getLoginUrl(), expectedUrl);
   });
 
@@ -59,7 +62,7 @@ describe('test', () => {
     });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?access_token=access-code&state=state&expires_in=1000';
-    await token.exhangeUrl(resultUrl);
+    await token.exchangeUrl(resultUrl);
     assert.equal(token.canRefresh, false);
     assert.equal(token.isExpired, false);
     assert.equal(token.isValid, true);
@@ -72,7 +75,7 @@ describe('test', () => {
       allowExport: true,
     });
       const resultUrl = 'https://localhost:3000?access_token=access-code&state=state&expires_in=1000';
-      await token.exhangeUrl(resultUrl);
+      await token.exchangeUrl(resultUrl);
       throw Error('should not be reachable');
     } catch (err) {
       assert.equal(err.toString(), 'Error: Session could not be found');

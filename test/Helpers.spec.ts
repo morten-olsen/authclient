@@ -52,7 +52,7 @@ describe('test', () => {
     });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?code=token&state=state';
-    await token.exhangeUrl(resultUrl);
+    await token.exchangeUrl(resultUrl);
     const profile = await token.getProfile();
     assert.equal(profile.name, 'test');
   });
@@ -66,11 +66,35 @@ describe('test', () => {
     });
     const url = await token.getLoginUrl();
     const resultUrl = 'https://localhost:3000?access_token=token&state=state';
-    await token.exhangeUrl(resultUrl);
+    await token.exchangeUrl(resultUrl);
     const profile = await token.request({
       method: 'get',
       url: 'https://api.example.com/user',
     });
     assert.equal(profile.data.name, 'test');
+  });
+
+  it('should be able to detect valid query string url', () => {
+    const token = new Token(config);
+    const url = 'https://localhost:3000?code=foo';
+    assert.isTrue(token.isValidUrl(url));
+  });
+
+  it('should be able to detect valid hash url', () => {
+    const token = new Token(config);
+    const url = 'https://localhost:3000#code=foo';
+    assert.isTrue(token.isValidUrl(url));
+  });
+
+  it('should be able to detect invalid hash url', () => {
+    const token = new Token(config);
+    const url = 'https://localhost:3000#codee=foo';
+    assert.isFalse(token.isValidUrl(url));
+  });
+
+  it('should be able to detect invalid hash url', () => {
+    const token = new Token(config);
+    const url = 'https://localhost:3000?codee=foo';
+    assert.isFalse(token.isValidUrl(url));
   });
 });
