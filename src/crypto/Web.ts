@@ -1,9 +1,9 @@
 import ICrypto from '../ICrypto';
-const sha = require('js-sha256');
-const base64 = require('base-64');
 
-// tslint:disable-next-line
+/* tslint:disable */
 const sha: any = require('js-sha256');
+const base64 = require('base-64');
+/* tslint:enable */
 
 const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const HAS_CRYPTO = typeof window !== 'undefined' && !!(global as any).crypto;
@@ -37,7 +37,7 @@ class NodeCrypto implements ICrypto {
     } else {
       let result = '';
       for (let i = 0; i < 64; i++) {
-        result += CHARSET[Math.floor(Math.random() * CHARSET.length)]
+        result += CHARSET[Math.floor(Math.random() * CHARSET.length)];
       }
       return result;
     }
