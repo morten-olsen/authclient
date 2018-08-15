@@ -92,8 +92,12 @@ class Token {
     url.query.nonce = session.nonce;
     url.query.response_type = responseType;
     url.query.redirect_uri = redirectUri;
-    url.query.client_secret = clientSecret;
-    url.query.grant_types = grantType;
+    if (clientSecret) {
+      url.query.client_secret = clientSecret;
+    }
+    if (grantType) {
+      url.query.grant_types = grantType;
+    }
 
     if (scopes) {
       url.query.scope = scopes.join(' ');

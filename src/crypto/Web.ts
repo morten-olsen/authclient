@@ -1,18 +1,9 @@
 import ICrypto from '../ICrypto';
+const sha = require('js-sha256');
+const base64 = require('base-64');
 
 const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const HAS_CRYPTO = typeof window !== 'undefined' && !!(global as any).crypto;
-const encoder = (global as any).TextEncoder ? new (global as any).TextEncoder('utf-8') : undefined;
-
-const arrayBufferToBase64 = (buffer) => {
-  let binary = '';
-  const bytes = new global.Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i += 1) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return (global as any).btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-};
 
 export const bufferToString = (buffer) => {
   const state = [];
@@ -27,27 +18,26 @@ export const bufferToString = (buffer) => {
 
 class NodeCrypto implements ICrypto {
   public async sha256(input: string) {
-    const encoded = encoder.encode(input);
-    const hashed = await (global as any).crypto.subtle.digest('SHA-256', encoded);
-    return hashed;
+    return sha(input);
   }
 
   public async base64UrlEncode(value: string) {
-    return arrayBufferToBase64(value);
+    return base64.encode(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
   }
 
   public async random(type: string) {
-    const sizeInBytes = 64;
-    const buffer = new Uint8Array(sizeInBytes);
     if (HAS_CRYPTO) {
+      const sizeInBytes = 64;
+      const buffer = new Uint8Array(sizeInBytes);
       (global as any).crypto.getRandomValues(buffer);
+      return bufferToString(buffer);
     } else {
-      // fall back to Math.random() if nothing else is available
-      for (let i = 0; i < sizeInBytes; i += 1) {
-        buffer[i] = Math.random();
+      let result = '';
+      for (let i = 0; i < 64; i++) {
+        result += CHARSET[Math.floor(Math.random() * CHARSET.length)]
       }
+      return result;
     }
-    return bufferToString(buffer);
   }
 }
 
