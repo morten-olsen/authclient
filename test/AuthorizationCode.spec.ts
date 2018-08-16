@@ -27,6 +27,7 @@ const config: IConfig = {
 const mock = new Mock(axios);
 mock.onGet('https://example.com/.well-known/openid-configuration').reply(200, {
   authorization_endpoint: 'https://example.com/authorization',
+  revocation_endpoint: 'https://example.com/revoke',
   token_endpoint: 'https://example.com/token',
 });
 
@@ -122,5 +123,24 @@ describe('test', () => {
     assert.equal(token.canRefresh, true);
     assert.equal(token.isExpired, false);
     assert.equal(token.isValid, true);
+  });
+
+  it('should be able to revoke a token', async () => {
+    mock.onPost('https://example.com/token').replyOnce(200, {
+      access_token: 'access-code',
+      expires_in: 1000,
+      refresh_token: 'refresh-token',
+    });
+    mock.onPost('https://example.com/revoke').replyOnce(200, {
+    });
+    const token = new Token(config, {
+      allowExport: true,
+    });
+    const url = await token.getLoginUrl();
+    const resultUrl = 'https://localhost:3000?code=token&state=state';
+    await token.exchangeUrl(resultUrl);
+    assert.equal(token.isValid, true);
+    await token.revoke();
+    assert.equal(token.isValid, false);
   });
 });

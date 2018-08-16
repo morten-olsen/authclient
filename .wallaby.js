@@ -11,6 +11,10 @@ module.exports = (w) => ({
   ],
   testFramework: 'mocha',
   env: {
-    type: 'node'
+    type: 'node',
+  },
+  workers: {
+    initial: 1,
+    regular: 1,
   },
 });
