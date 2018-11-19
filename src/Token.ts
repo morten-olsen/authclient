@@ -38,6 +38,10 @@ class Token {
     this.options = options;
   }
 
+  get idToken() {
+    return this.token.idToken;
+  }
+
   get isExpired() {
     const currentTime = new Date().getTime();
     return this.token.creationTime + (this.token.expiresIn * 1000) < currentTime;
@@ -105,7 +109,11 @@ class Token {
       url.query.scope = scopes.join(' ');
     }
 
-    await configManager.setItem(state, session);
+    if (this.config.store) {
+      await this.config.store.setItem(state, JSON.stringify(session));
+    } else {
+      await configManager.setItem(state, session);
+    }
     return url.toString();
   }
 
@@ -123,12 +131,18 @@ class Token {
     const {
       token_endpoint: tokenEndpoint,
     } = await this.getWellKnown();
-    const session = await configManager.getItem(sessionId);
+    const session = this.config.store
+      ? JSON.parse(await this.config.store.getItem(sessionId))
+      : await configManager.getItem(sessionId);
 
     if (!session) {
       throw Error('Session could not be found');
     }
-    await configManager.removeItem(sessionId);
+    if (this.config.store) {
+      this.config.store.removeItem(sessionId);
+    } else {
+      await configManager.removeItem(sessionId);
+    }
 
     if (code) {
       const token = await this.call<any>(
@@ -144,6 +158,7 @@ class Token {
         },
       );
       this.token = {
+        idToken: token.id_token,
         accessCode: token.access_token,
         creationTime: new Date().getTime(),
         expiresIn: token.expires_in,
@@ -155,6 +170,7 @@ class Token {
       return token;
     } else {
       this.token = {
+        idToken: parsed.id_token,
         accessCode: parsed.access_token,
         creationTime: new Date().getTime(),
         expiresIn: parseInt(parsed.expires_in || '0', 10),
@@ -193,6 +209,7 @@ class Token {
       },
     );
     this.token = {
+      idToken: token.idToken || this.token.idToken,
       accessCode: token.access_token,
       creationTime: new Date().getTime(),
       expiresIn: token.expires_in,
