@@ -1,9 +1,0 @@
-/lib
-/node_modules
-/tsconfig.json
-/yarn.lock
-/.gitignore
-/coverage
-/src
-/test
-/yarn-error.log

@@ -1,73 +1,8 @@
 {
-  "name": "authenticatornator",
-  "version": "2.0.1-beta.8",
-  "main": "build/compiled/index.js",
-  "browser": "build/compiled/index.web.js",
-  "types": "build/compiled/index.ts",
-  "license": "MIT",
-  "scripts": {
-    "demo": "parcel demo/index.html -p 1234",
-    "test": "npm run lint && jest",
-    "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "build": "tsc",
-    "build:docs": "rimraf docs && typedoc --out docs --target ES6 --mode modules --includes src ./src && parcel build demo/index.html -d docs/demo",
-    "semantic-release": "semantic-release",
-    "coverage": "jest --coverage && cat ./coverage/lcov.info | coveralls",
-    "prepare": "npm run build"
-  },
-  "devDependencies": {
-    "@types/chai": "^4.1.4",
-    "@types/jest": "^23.3.0",
-    "@types/node": "^10.5.2",
-    "axios-mock-adapter": "^1.15.0",
-    "babel-core": "^6.26.3",
-    "babel-polyfill": "^6.26.0",
-    "chai": "^4.1.2",
-    "coveralls": "^3.0.2",
-    "electron": "^2.0.5",
-    "jest": "^23.4.1",
-    "parcel": "^1.9.7",
-    "rimraf": "^2.6.2",
-    "rollup": "^0.62.0",
-    "rollup-plugin-node-resolve": "^3.3.0",
-    "rollup-plugin-typescript": "^0.8.1",
-    "rollup-plugin-typescript2": "^0.16.1",
-    "rollup-plugin-uglify": "^4.0.0",
-    "semantic-release": "^15.8.1",
-    "ts-jest": "^23.0.1",
-    "ts-node": "^7.0.0",
-    "tslint": "^5.10.0",
-    "typedoc": "^0.11.1",
-    "typescript": "^2.9.2",
-    "uglify-es": "^3.3.9"
-  },
-  "release": {
-    "branch": "master"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ],
-    "transform": {
-      "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
-    },
-    "testRegex": "/test/.*\\.spec.(ts|tsx|js)$",
-    "collectCoverageFrom": [
-      "src/Token.ts"
-    ],
-    "coverageReporters": [
-      "json",
-      "lcov",
-      "text",
-      "html"
-    ]
-  },
-  "dependencies": {
-    "axios": "^0.18.0",
-    "base-64": "^0.1.0",
-    "js-sha256": "^0.9.0",
-    "pure-url": "^0.8.2"
-  }
+  "name": "authclient",
+  "version": "3.0.0-alpha.1",
+  "main": "index.js",
+  "repository": "https://github.com/morten-olsen/authclient",
+  "author": "Morten Olsen <morten@olsen.pro>",
+  "license": "MIT"
 }
