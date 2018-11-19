@@ -1,6 +1,6 @@
 interface Token {
   idToken?: string;
-  acceessToken: string;
+  accessToken: string;
   refreshToken?: string;
   expiresIn: number;
   createdAt: number;
