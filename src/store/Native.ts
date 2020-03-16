@@ -1,7 +1,5 @@
 /* tslint:disable */
-const {
-  AsyncStorage,
-} = require('react-native');
+const AsyncStorage = require('@react-native-community/async-storage');
 /* tslint:enable */
 
 import IStore from '../IStore';
