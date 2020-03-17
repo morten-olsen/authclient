@@ -159,9 +159,9 @@ class Token {
       );
       this.token = {
         accessCode: token.access_token,
-        idToken: token.id_token,
         creationTime: new Date().getTime(),
         expiresIn: token.expires_in,
+        idToken: token.id_token,
         refreshCode: token.refresh_token,
       };
       if (this.options.autoSave) {
@@ -171,9 +171,9 @@ class Token {
     } else {
       this.token = {
         accessCode: parsed.access_token,
-        idToken: parsed.id_token,
         creationTime: new Date().getTime(),
         expiresIn: parseInt(parsed.expires_in || '0', 10),
+        idToken: parsed.id_token,
       };
       if (this.options.autoSave) {
         this.save();
@@ -210,9 +210,9 @@ class Token {
     );
     this.token = {
       accessCode: token.access_token,
-      idToken: token.idToken || this.token.idToken,
       creationTime: new Date().getTime(),
       expiresIn: token.expires_in,
+      idToken: token.idToken || this.token.idToken,
       refreshCode: token.refresh_token || this.token.refreshCode,
     };
     if (this.options.autoSave) {
