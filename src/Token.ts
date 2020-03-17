@@ -158,8 +158,8 @@ class Token {
         },
       );
       this.token = {
-        idToken: token.id_token,
         accessCode: token.access_token,
+        idToken: token.id_token,
         creationTime: new Date().getTime(),
         expiresIn: token.expires_in,
         refreshCode: token.refresh_token,
@@ -170,8 +170,8 @@ class Token {
       return token;
     } else {
       this.token = {
-        idToken: parsed.id_token,
         accessCode: parsed.access_token,
+        idToken: parsed.id_token,
         creationTime: new Date().getTime(),
         expiresIn: parseInt(parsed.expires_in || '0', 10),
       };
@@ -209,8 +209,8 @@ class Token {
       },
     );
     this.token = {
-      idToken: token.idToken || this.token.idToken,
       accessCode: token.access_token,
+      idToken: token.idToken || this.token.idToken,
       creationTime: new Date().getTime(),
       expiresIn: token.expires_in,
       refreshCode: token.refresh_token || this.token.refreshCode,
