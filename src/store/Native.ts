@@ -1,4 +1,6 @@
+/* tslint:disable */
 import AsyncStorage from '@react-native-community/async-storage';
+/* tslint:enable */
 
 import IStore from '../IStore';
 
