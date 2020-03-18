@@ -16,6 +16,7 @@
     "prepare": "npm run build"
   },
   "devDependencies": {
+    "@react-native-community/async-storage": "^1.8.1",
     "@types/chai": "^4.1.4",
     "@types/jest": "^23.3.0",
     "@types/node": "^10.5.2",
