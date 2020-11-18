@@ -34,7 +34,7 @@
     "rollup-plugin-typescript": "^0.8.1",
     "rollup-plugin-typescript2": "^0.16.1",
     "rollup-plugin-uglify": "^4.0.0",
-    "semantic-release": "^15.8.1",
+    "semantic-release": "^17.2.3",
     "ts-jest": "^23.0.1",
     "ts-node": "^7.0.0",
     "tslint": "^5.10.0",
